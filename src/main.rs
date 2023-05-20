@@ -4,7 +4,10 @@
 
 use std::env;
 
-use handler::Handler;
+use handler::{
+	spawn_timeout_checker,
+	Handler,
+};
 use serenity::{
 	prelude::GatewayIntents,
 	Client,
@@ -19,6 +22,7 @@ async fn main() -> Aegis<()> {
 	env::set_var("RUST_LOG", "serenity=debug,sentinel=trace");
 	dotenv::dotenv()?;
 	env_logger::init();
+	spawn_timeout_checker();
 
 	let discord_bot_token = env::var("DISCORD_BOT_TOKEN")?;
 	let mut discord_client = Client::builder(&discord_bot_token, GatewayIntents::all())
