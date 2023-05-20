@@ -40,6 +40,6 @@ impl EventHandler for Handler {
 	}
 }
 
-pub static DISCORD_READY: AtomicBool = AtomicBool::new(false);
+static DISCORD_READY: AtomicBool = AtomicBool::new(false);
 
-pub static READY_UP_TIME: Duration = Duration::new(10, 0);
+static READY_UP_TIME: Duration = Duration::new(10, 0);
