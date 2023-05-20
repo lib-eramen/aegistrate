@@ -1,0 +1,1 @@
+[Want Aegistrate to stop by? Invite them!](https://discord.com/api/oauth2/authorize?client_id=1109417194552565820&permissions=8&scope=applications.commands%20bot)

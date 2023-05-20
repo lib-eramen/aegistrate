@@ -2,13 +2,28 @@
 #![warn(clippy::all, clippy::pedantic)]
 #![allow(missing_docs)]
 
-pub type Aegis<T> = anyhow::Result<T>;
+use std::env;
+
+use handler::Handler;
+use serenity::{
+	prelude::GatewayIntents,
+	Client,
+};
+
+mod handler;
+
+type Aegis<T> = anyhow::Result<T>;
 
 #[tokio::main]
 async fn main() -> Aegis<()> {
-    std::env::set_var("RUST_LOG", "serenity=debug,sentinel=trace");
-    dotenv::dotenv()?;
-    env_logger::init();
-    println!("Hello, world!");
-    Ok(())
+	env::set_var("RUST_LOG", "serenity=debug,sentinel=trace");
+	dotenv::dotenv()?;
+	env_logger::init();
+
+	let discord_bot_token = env::var("DISCORD_BOT_TOKEN")?;
+	let mut discord_client = Client::builder(&discord_bot_token, GatewayIntents::all())
+		.event_handler(Handler)
+		.await?;
+	discord_client.start().await?;
+	Ok(())
 }
