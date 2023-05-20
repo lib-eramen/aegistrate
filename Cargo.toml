@@ -2,7 +2,12 @@
 name = "aegistrate"
 version = "0.1.0"
 edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+authors = ["developer-ramen <ramendev2009@gmail.com>"]
+# rust-version — The minimal supported Rust version.
+description = "Your Discord guild's aegis and magistrate! Yes, some people get that portmanteau."
+readme = "README.md"
+repository = "https://github.com/developer-ramen/aegistrate"
+license = "MIT"
+keywords = ["discord", "discord-bot", "moderation", "general-purpose"]
 
 [dependencies]
