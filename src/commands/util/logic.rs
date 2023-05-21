@@ -1,21 +1,9 @@
-use serenity::{
-	client::Cache,
-	model::prelude::{
-		Guild,
-		Member,
-	},
-};
+//! Contains some utility functions that perform some kind of logic for a
+//! result. Sorry, I ran out of vocabulary to name this module, and "query" just
+//! didn't sound right.
 
-pub fn highest_role_position(cache: &Cache, member: &Member, guild: &Guild) -> i64 {
-	if let Some((_, position)) = member.highest_role_info(cache) {
-		position
-	} else if member.user.id == guild.owner_id {
-		i64::MAX
-	} else {
-		0
-	}
-}
-
+/// A ternary operator ditto.
+#[must_use]
 pub fn yes_no<T>(condition: bool, yes: T, no: T) -> T {
 	if condition {
 		yes
@@ -24,6 +12,9 @@ pub fn yes_no<T>(condition: bool, yes: T, no: T) -> T {
 	}
 }
 
+/// A ternary operator ditto, but with closures! Woohoo! (I hate these kinds of
+/// doc comments)
+#[must_use]
 pub fn yes_no_eval<F1, F2, R>(condition: bool, yes: F1, no: F2) -> R
 where
 	F1: FnOnce() -> R,
@@ -35,6 +26,8 @@ where
 	}
 }
 
+/// Ternary operator ditto for strings, with the `true` argument defaulting to
+/// `"Yes"` and the `false` argument defaulting to `"No"`.
 #[must_use]
 pub fn yes_no_str<'a>(condition: bool, yes: Option<&'a str>, no: Option<&'a str>) -> &'a str {
 	yes_no(condition, yes.unwrap_or("Yes"), no.unwrap_or("No"))

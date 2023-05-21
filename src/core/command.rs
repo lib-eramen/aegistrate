@@ -56,3 +56,10 @@ pub trait Command {
 		interaction: &ApplicationCommandInteraction,
 	) -> Aegis<()>;
 }
+
+/// Returns all commands there are in Aegistrate.
+/// Note that the commands are only retrieved via their [Plugin]s.
+#[must_use]
+pub fn all_commands() -> Commands {
+	Plugin::commands_by_plugins(enum_iterator::all::<Plugin>().collect::<Vec<Plugin>>())
+}

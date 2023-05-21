@@ -1,3 +1,6 @@
+//! Contains some functions for working with the [Option]-laden slash command
+//! options API.
+
 #![allow(clippy::needless_pass_by_value)]
 
 use serenity::model::prelude::{
@@ -10,8 +13,16 @@ use serenity::model::prelude::{
 	User,
 };
 
+/// Alias for a [`CommandDataOption`] slice.
 type Options<'a> = &'a [CommandDataOption];
 
+/// Gets an option from an option list.
+///
+/// # Panics
+///
+/// If the option found was unable to be resolved (I still don't know what
+/// option resolution might be), unwrapping it might cause the
+/// function to panic.
 #[must_use]
 pub fn get_option(options: Options<'_>, name: &str) -> Option<CommandDataOptionValue> {
 	options
@@ -20,11 +31,23 @@ pub fn get_option(options: Options<'_>, name: &str) -> Option<CommandDataOptionV
 		.map(|option| option.resolved.as_ref().unwrap().clone())
 }
 
+/// Gets an option from an option list.
+///
+/// # Panics
+///
+/// This function should only be called with the knowledge that the option with
+/// the provided name is required, as it is unwrapped from [`get_option`].
 #[must_use]
 pub fn get_required_option(options: &[CommandDataOption], name: &str) -> CommandDataOptionValue {
 	get_option(options, name).unwrap()
 }
 
+/// Gets an option from an option list, falling back to a default value.
+///
+/// # Panics
+///
+/// If the provided `default` option's enum variant is mismatched with the
+/// retrieved option, the function will panic.
 #[must_use]
 pub fn get_option_or(
 	options: &[CommandDataOption],
@@ -44,6 +67,12 @@ pub fn get_option_or(
 	}
 }
 
+/// Gets a string option.
+///
+/// # Panics
+///
+/// The function panics if the option is not of the
+/// [`CommandDataOptionValue::String`] variant.
 #[must_use]
 pub fn get_string(option: CommandDataOptionValue) -> String {
 	if let CommandDataOptionValue::String(value) = option {
@@ -52,6 +81,12 @@ pub fn get_string(option: CommandDataOptionValue) -> String {
 	panic!("Wrong type of option: {option:#?} is not a string");
 }
 
+/// Gets an [`i64`] option.
+///
+/// # Panics
+///
+/// The function panics if the option is not of the
+/// [`CommandDataOptionValue::Integer`] variant.
 #[must_use]
 pub fn get_int(option: CommandDataOptionValue) -> i64 {
 	if let CommandDataOptionValue::Integer(value) = option {
@@ -60,6 +95,26 @@ pub fn get_int(option: CommandDataOptionValue) -> i64 {
 	panic!("Wrong type of option: {option:#?} is not an integer");
 }
 
+/// Gets an [`f64`] option.
+///
+/// # Panics
+///
+/// The function panics if the option is not of the
+/// [`CommandDataOptionValue::Number`] variant.
+#[must_use]
+pub fn get_num(option: CommandDataOptionValue) -> f64 {
+	if let CommandDataOptionValue::Number(value) = option {
+		return value;
+	}
+	panic!("Wrong type of option: {option:#?} is not an integer");
+}
+
+/// Gets a boolean option.
+///
+/// # Panics
+///
+/// The function panics if the option is not of the
+/// [`CommandDataOptionValue::Boolean`] variant.
 #[must_use]
 pub fn get_bool(option: CommandDataOptionValue) -> bool {
 	if let CommandDataOptionValue::Boolean(value) = option {
@@ -68,6 +123,12 @@ pub fn get_bool(option: CommandDataOptionValue) -> bool {
 	panic!("Wrong type of option: {option:#?} is not a boolean");
 }
 
+/// Gets a user, and [Option]ally a [`PartialMember`] object from the option.
+///
+/// # Panics
+///
+/// The function panics if the option is not of the
+/// [`CommandDataOptionValue::User`] variant.
 #[must_use]
 pub fn get_user(option: CommandDataOptionValue) -> (User, Option<PartialMember>) {
 	if let CommandDataOptionValue::User(user, partial_guild_member) = option {
@@ -76,6 +137,12 @@ pub fn get_user(option: CommandDataOptionValue) -> (User, Option<PartialMember>)
 	panic!("Wrong type of option: {option:#?} is not a user");
 }
 
+/// Gets a channel option.
+///
+/// # Panics
+///
+/// The function panics if the option is not of the
+/// [`CommandDataOptionValue::Channel`] variant.
 #[must_use]
 pub fn get_channel(option: CommandDataOptionValue) -> PartialChannel {
 	if let CommandDataOptionValue::Channel(channel) = option {

@@ -10,7 +10,6 @@ use enum_iterator::{
 
 use crate::core::command::Commands;
 
-// TODO: Command creation
 /// A plugin that a command semantically belongs to.
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Sequence)]
 pub enum Plugin {
@@ -55,21 +54,13 @@ impl Plugin {
 		}
 	}
 
-	// TODO
-	/// Returns whether this plugin that the enum represents can be disabled.
-	/// Note that this is a manually maintained and updated check.
-	#[must_use]
-	pub fn can_be_disabled(self) -> bool {
-		false
-	}
-
 	/// Gets a list of plugin names.
 	#[must_use]
 	pub fn get_plugin_names() -> Vec<&'static str> {
 		all::<Self>().map(Self::to_name).collect()
 	}
 
-	/// Gets a list of 
+	/// Gets a list of commands that belongs to the current plugin.
 	#[must_use]
 	pub fn get_commands(self) -> Commands {
 		match self {
@@ -77,15 +68,20 @@ impl Plugin {
 		}
 	}
 
+	/// Gets a list of commands that belongs to one of the plugins provided.
 	pub fn commands_by_plugins(plugins: Vec<Self>) -> Commands {
 		plugins.into_iter().flat_map(Self::get_commands).collect()
 	}
 
+	/// Returns a list of default plugins. Default plugins cannot be disabled
+	/// and is always on for all guilds when Aegistrate is added to the guild.
 	#[must_use]
 	pub fn default_plugins() -> Vec<Self> {
 		vec![Self::Moderation]
 	}
 
+	/// Returns a list of default commands, by taking them from the [list of
+	/// default plugins](Self::default_plugins).
 	#[must_use]
 	pub fn default_commands() -> Commands {
 		Self::commands_by_plugins(Self::default_plugins())
