@@ -1,3 +1,5 @@
+#![allow(clippy::option_option)]
+
 use serenity::{
 	builder::CreateEmbed,
 	http::Http,
