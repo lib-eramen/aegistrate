@@ -1,6 +1,6 @@
 #![deny(unused_must_use, unused_imports, rust_2018_idioms)]
 #![warn(clippy::all, clippy::pedantic)]
-#![allow(missing_docs, dead_code)]
+#![allow(missing_docs, dead_code, clippy::module_name_repetitions)]
 
 use std::env;
 

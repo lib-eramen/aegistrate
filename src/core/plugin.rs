@@ -5,10 +5,10 @@ use enum_iterator::{
 
 use crate::core::command::Commands;
 
-/// can boost the functionality of another.
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Sequence)]
 pub enum Plugin {
 	Moderation,
+	Information,
 }
 
 impl Plugin {
@@ -34,6 +34,7 @@ impl Plugin {
 	pub fn to_name(self) -> &'static str {
 		match self {
 			Self::Moderation => "moderation",
+			Self::Information => "information",
 		}
 	}
 
@@ -50,7 +51,7 @@ impl Plugin {
 	#[must_use]
 	pub fn get_commands(self) -> Commands {
 		match self {
-			Self::Moderation => todo!(),
+			Self::Information | Self::Moderation => todo!(),
 		}
 	}
 
@@ -63,8 +64,6 @@ impl Plugin {
 		vec![Self::Moderation]
 	}
 
-	/// Gets a [`Vec`] of commands that belong to the [default
-	/// plugins](Self::default_plugins).
 	#[must_use]
 	pub fn default_commands() -> Commands {
 		Self::commands_by_plugins(Self::default_plugins())
