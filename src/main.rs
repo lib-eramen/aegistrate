@@ -18,6 +18,8 @@ use serenity::{
 };
 
 mod aegis;
+mod commands;
+mod core;
 mod handler;
 
 #[tokio::main]
