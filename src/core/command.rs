@@ -20,7 +20,7 @@ use crate::{
 pub type Commands = Vec<Box<dyn Command>>;
 
 /// Metadata associated with a command.
-#[derive(Copy, Clone, Builder)]
+#[derive(Clone, Builder)]
 pub struct Metadata<'a> {
 	/// The name of the command.
 	pub name: &'a str,
@@ -30,6 +30,17 @@ pub struct Metadata<'a> {
 
 	/// The cooldown to use the command, in seconds.
 	pub cooldown_secs: u64,
+
+	/// The aliases for the command.
+	pub aliases: Option<Vec<&'a str>>,
+}
+
+impl Metadata<'_> {
+	/// Returns the [builder struct](MetadataBuilder) for this struct.
+	#[must_use]
+	pub fn builder<'a>() -> MetadataBuilder<'a> {
+		MetadataBuilder::create_empty()
+	}
 }
 
 /// The command functionality to work with other systems in Aegistrate.
@@ -44,6 +55,10 @@ pub trait Command {
 	/// order to be sent to be registered via Discord's slash command API. Check
 	/// out the [`CreateApplicationCommand`] struct for more information on how
 	/// to implement this method.
+	///
+	/// Note to implementors: The command handler should have already registered
+	/// the name as well as the aliases for the command, so no worries doing
+	/// that in this function.
 	fn register<'a>(
 		&self,
 		command: &'a mut CreateApplicationCommand,
