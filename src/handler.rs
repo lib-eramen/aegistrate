@@ -54,6 +54,26 @@ impl EventHandler for Handler {
 			get_aegistrate_user()
 		);
 	}
+
+	// async fn _ready(&self, context: Context, bot_data: Ready) {
+	// 	fire_up_database().await.unwrap();
+	// 	if !DISCORD_READY.load(Relaxed) {
+	// 		Self::discord_ready_up(&context, &bot_data).await;
+	// 		Self::initialize_systems(&context, &bot_data)
+	// 			.await
+	// 			.unwrap_or_else(|why| error!("Initializing system failed: {why}"));
+	// 	}
+	// 	Self::appear_active(&context, &bot_data).await;
+	// }
+
+	// async fn interaction_create(&self, context: Context, interaction: Interaction) {
+	// 	match interaction {
+	// 		Interaction::ApplicationCommand(ref app_interaction) => {
+	// 			Self::run_application_command(&context, app_interaction).await;
+	// 		},
+	// 		_ => return,
+	// 	};
+	// }
 }
 
 /// Gets the Aegistrate user that is under a layer of [`OnceCell`].
