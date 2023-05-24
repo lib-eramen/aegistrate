@@ -18,8 +18,8 @@ use log::{
 };
 use serenity::{
 	model::{
-		prelude::Ready,
-		user::CurrentUser,
+		prelude::{Ready, Activity},
+		user::{CurrentUser, OnlineStatus},
 	},
 	prelude::{
 		Context,
@@ -46,9 +46,8 @@ pub struct Handler;
 
 #[async_trait]
 impl EventHandler for Handler {
-	async fn ready(&self, _context: Context, bot_data: Ready) {
-		AEGISTRATE_USER.set(bot_data.user).unwrap();
-		DISCORD_READY.store(true, Ordering::Relaxed);
+	async fn ready(&self, context: Context, bot_data: Ready) {
+		Self::discord_ready_up(&context, &bot_data).await;
 		info!(
 			"Aegistrate is up and running!\n{:#?}",
 			get_aegistrate_user()
@@ -74,6 +73,25 @@ impl EventHandler for Handler {
 	// 		_ => return,
 	// 	};
 	// }
+}
+
+impl Handler {
+	/// Readies up the Discord service portion of Aegistrate.
+	/// 
+	/// # Panics
+	/// 
+	/// This function may panic if [`AEGISTRATE_USER`] is not successfully set to
+	/// the provided user.
+	pub async fn discord_ready_up(context: &Context, bot_data: &Ready) {
+		AEGISTRATE_USER.set(bot_data.user.clone()).unwrap();
+		DISCORD_READY.store(true, Ordering::Relaxed);
+		context
+			.set_presence(
+				Some(Activity::playing("the waiting game...")),
+				OnlineStatus::DoNotDisturb,
+			)
+			.await;
+	}
 }
 
 /// Gets the Aegistrate user that is under a layer of [`OnceCell`].
