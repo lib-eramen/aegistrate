@@ -35,11 +35,22 @@ pub struct Metadata<'a> {
 	pub aliases: Option<Vec<&'a str>>,
 }
 
-impl Metadata<'_> {
+impl<'a> Metadata<'a> {
 	/// Returns the [builder struct](MetadataBuilder) for this struct.
 	#[must_use]
-	pub fn builder<'a>() -> MetadataBuilder<'a> {
+	pub fn builder<'b>() -> MetadataBuilder<'b> {
 		MetadataBuilder::create_empty()
+	}
+
+	/// Returns the list of all names and alises of this command.
+	#[must_use]
+	pub fn all_names(&self) -> Vec<&'a str> {
+		if let Some(mut aliases) = self.aliases.clone() {
+			aliases.push(self.name);
+			aliases
+		} else {
+			vec![self.name]
+		}
 	}
 }
 
@@ -47,7 +58,7 @@ impl Metadata<'_> {
 /// To make a command, implement this trait to your (hopefully unit) struct.
 #[async_trait]
 #[must_use]
-pub trait Command {
+pub trait Command: Send + Sync {
 	/// Returns the metadata of the command.
 	fn metadata(&self) -> Metadata<'_>;
 
@@ -77,4 +88,13 @@ pub trait Command {
 #[must_use]
 pub fn all_commands() -> Commands {
 	Plugin::commands_by_plugins(enum_iterator::all::<Plugin>().collect::<Vec<Plugin>>())
+}
+
+/// Returns a command with the name provided.
+/// A [None] is returned if none is found.
+#[must_use]
+pub fn command_by_name(name: &str) -> Option<Box<dyn Command>> {
+	all_commands()
+		.into_iter()
+		.find(|command| command.metadata().all_names().contains(&name))
 }

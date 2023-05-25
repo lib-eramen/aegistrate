@@ -8,7 +8,10 @@ use enum_iterator::{
 	Sequence,
 };
 
-use crate::core::command::Commands;
+use crate::{
+	commands::plugins::information::information_commands,
+	core::command::Commands,
+};
 
 /// A plugin that a command semantically belongs to.
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Sequence)]
@@ -64,7 +67,8 @@ impl Plugin {
 	#[must_use]
 	pub fn get_commands(self) -> Commands {
 		match self {
-			Self::Information | Self::Moderation => vec![],
+			Self::Information => information_commands(),
+			Self::Moderation => vec![],
 		}
 	}
 

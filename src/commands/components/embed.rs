@@ -38,10 +38,10 @@ impl EmbedKind {
 }
 
 /// The template for the embeds that Aegistrate send.
-pub fn embed_template<S: ToString>(
+pub fn embed_template<T: ToString, D: ToString>(
 	embed: &mut CreateEmbed,
-	title: S,
-	description: S,
+	title: T,
+	description: D,
 	kind: EmbedKind,
 ) -> &mut CreateEmbed {
 	embed
@@ -52,38 +52,38 @@ pub fn embed_template<S: ToString>(
 }
 
 /// Creates a success dialog embed.
-pub fn create_success_embed<S: ToString>(
+pub fn create_success_embed<T: ToString, D: ToString>(
 	embed: &mut CreateEmbed,
-	title: S,
-	description: S,
+	title: T,
+	description: D,
 ) -> &mut CreateEmbed {
 	embed_template(embed, title, description, EmbedKind::Success)
 }
 
 /// Creates an information dialog embed.
-pub fn create_info_embed<S: ToString>(
+pub fn create_info_embed<T: ToString, D: ToString>(
 	embed: &mut CreateEmbed,
-	title: S,
-	description: S,
+	title: T,
+	description: D,
 ) -> &mut CreateEmbed {
 	embed_template(embed, title, description, EmbedKind::Info)
 }
 
 /// Creates a warning dialog embed.
-pub fn create_warning_embed<S: ToString>(
+pub fn create_warning_embed<T: ToString, W: ToString>(
 	embed: &mut CreateEmbed,
-	title: S,
-	warning: S,
+	title: T,
+	warning: W,
 ) -> &mut CreateEmbed {
 	embed_template(embed, title, warning, EmbedKind::Warn)
 }
 
 /// Creates an error dialog embed.
-pub fn create_error_embed<S: ToString>(
+pub fn create_error_embed<E: ToString, C: ToString>(
 	embed: &mut CreateEmbed,
-	error: S,
-	cause: S,
-	hint: Option<S>,
+	error: E,
+	cause: C,
+	hint: Option<E>,
 ) -> &mut CreateEmbed {
 	let e = embed_template(
 		embed,
