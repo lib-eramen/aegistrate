@@ -31,6 +31,7 @@ use serenity::{
 pub mod aegis;
 pub mod commands;
 pub mod core;
+pub mod data;
 pub mod handler;
 
 /// Execution entry point of Aegistrate.

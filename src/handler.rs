@@ -3,6 +3,7 @@
 //! Aegistrate's state.
 
 use std::{
+	env::var,
 	sync::atomic::{
 		AtomicBool,
 		Ordering,
@@ -84,6 +85,9 @@ pub struct Handler;
 #[async_trait]
 impl EventHandler for Handler {
 	async fn ready(&self, context: Context, bot_data: Ready) {
+		set_up_database().await.unwrap_or_else(|why| {
+			panic!("Database failed to set up: {why}");
+		});
 		if !DISCORD_READY.load(Ordering::Relaxed) {
 			Self::discord_ready_up(&context, &bot_data).await;
 			Self::initialize_systems(&context, &bot_data)
@@ -296,6 +300,26 @@ impl Handler {
 	}
 }
 
+/// Sets up the database service portion for Aegistrate.
+#[allow(clippy::missing_errors_doc)]
+pub async fn set_up_database() -> Aegis<()> {
+	let _ = MONGODB_CLIENT.set(mongod::Client::from_client(
+		mongodb::Client::with_uri_str(var("MONGODB_URI")?).await?,
+		"development",
+	));
+	Ok(())
+}
+
+/// Gets the MongoDB client that is under a layer of [`OnceCell`].
+///
+/// # Panics
+///
+/// This function panics if the [`MONGODB_CLIENT`] static variable
+/// hasn't been initialized.
+pub fn get_mongodb_client<'a>() -> &'a mongod::Client {
+	MONGODB_CLIENT.get().unwrap()
+}
+
 /// Gets the Aegistrate user that is under a layer of [`OnceCell`].
 ///
 /// # Panics
@@ -324,3 +348,6 @@ pub static READY_UP_TIME: Duration = Duration::new(10, 0);
 /// To access with knowledge that it has been initialized, use
 /// [`get_aegistrate_user`].
 pub static AEGISTRATE_USER: OnceCell<CurrentUser> = OnceCell::const_new();
+
+/// The MongoDB client that will interact with Aegistrate's MongoDB database.
+pub static MONGODB_CLIENT: OnceCell<mongod::Client> = OnceCell::const_new();
