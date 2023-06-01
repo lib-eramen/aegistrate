@@ -1,5 +1,9 @@
 //! Module containing everything to do with data processing and interacting with
 //! the database for Aegistrate.
+//!
+//! If you are looking for a particular mechanism/feature, you are probably
+//! looking at the wrong place. For those APIs (that wrap this module) that
+//! Aegistrate would use over ones provided here, it is at [`crate::core`].
 
 pub mod cooldown;
 
@@ -10,6 +14,9 @@ pub mod cooldown;
 /// provide an expression that will create a [`mongod::Update`] object from the
 /// struct.
 ///
+/// Clippy might also complain about `[must_use]` if the provided database
+/// struct is not already `[must_use]`.
+///
 /// Highly dirty and janky. Never use outside of Aegistrate.
 #[macro_export]
 macro_rules! common_db_impl {
@@ -17,7 +24,6 @@ macro_rules! common_db_impl {
 		impl $name {
 			/// Constructs a new instance of this struct, using only a guild ID and
 			/// defaulting for the rest of the fields.
-			#[must_use]
 			pub fn from_id(guild_id: u64) -> Self {
 				Self {
 					guild_id,
