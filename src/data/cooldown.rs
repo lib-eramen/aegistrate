@@ -10,7 +10,10 @@ use mongod::{
 	Mongo,
 };
 
-use crate::{common_db_impl, aegis::Aegis};
+use crate::{
+	aegis::Aegis,
+	common_db_impl,
+};
 
 /// A struct that manages cooldowns for guilds.
 /// For how executions are stored, the string is stored in the form that looks
@@ -44,15 +47,22 @@ impl CooldownManager {
 	/// Returns an [Option]al last use of a command.
 	#[must_use]
 	pub fn get_last_use(&self, user_id: u64, cmd_name: &str) -> Option<u64> {
-		self.executions.get(&user_cmd_key_str(user_id, cmd_name)).copied()
+		self.executions
+			.get(&user_cmd_key_str(user_id, cmd_name))
+			.copied()
 	}
 
 	/// Creates an entry for the last use of a command, while also updating
-	/// it to the database. 
+	/// it to the database.
 	/// TODO: API wrapper at the [`crate::core::cooldown`] module
-	pub(crate) async fn create_last_use(&mut self, user_id: u64, cmd_name: &str, timestamp: u64) -> Aegis<()> {
-		self.executions.insert(user_cmd_key_str(user_id, cmd_name), timestamp);
+	pub(crate) async fn create_last_use(
+		&mut self,
+		user_id: u64,
+		cmd_name: &str,
+		timestamp: u64,
+	) -> Aegis<()> {
+		self.executions
+			.insert(user_cmd_key_str(user_id, cmd_name), timestamp);
 		self.update_entry().await
 	}
-
 }

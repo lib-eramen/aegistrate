@@ -59,11 +59,19 @@ use crate::{
 			ResponseOptions,
 		},
 	},
-	core::command::{
-		all_commands,
-		command_by_name,
-		Command,
+	core::{
+		command::{
+			all_commands,
+			command_by_name,
+			Command,
+		},
+		cooldown::{
+			cooled_down,
+			get_remaining_cooldown,
+			use_last,
+		},
 	},
+	data::init_all_data,
 };
 
 /// Spawns a timeout checker that exits the program if [`DISCORD_READY`] is not
@@ -201,12 +209,13 @@ impl Handler {
 	async fn initialize_systems(context: &Context, bot_data: &Ready) -> Aegis<()> {
 		for guild in &bot_data.guilds {
 			Self::set_up_commands(context, guild).await?;
+			init_all_data(guild.id.into()).await?;
 		}
 		Ok(())
 	}
 
-	/// Responds to the interaction with a non-ready message.
-	async fn non_ready_respond(
+	/// Responds to the interaction with a not-ready message.
+	async fn not_ready_respond(
 		http: &Http,
 		app_interaction: &ApplicationCommandInteraction,
 	) -> Aegis<()> {
@@ -257,6 +266,35 @@ impl Handler {
 		.map(|_| ())
 	}
 
+	/// Responds to the interaction with a not-cooled-down message.
+	async fn not_cooled_down_respond(
+		http: &Http,
+		app_interaction: &ApplicationCommandInteraction,
+		command: &dyn Command,
+	) -> Aegis<()> {
+		let remaining_cooldown = get_remaining_cooldown(
+			app_interaction.guild_id.unwrap().into(),
+			app_interaction.user.id.into(),
+			command,
+		)
+		.await?;
+		respond_with_embed(
+			http,
+			app_interaction,
+			ResponseOptions::CreateOrignial(true),
+			|embed| {
+				create_error_embed(
+					embed,
+					"Cool down! You need to wait a bit more before using this command.",
+					format!("Cooldown has not been reached: {remaining_cooldown}s left."),
+					Some("Just pipe down and wait!"),
+				)
+			},
+		)
+		.await
+		.map(|_| ())
+	}
+
 	/// Handles a command execution for Aegistrate.
 	async fn handle_command_execution(
 		command: Box<dyn Command>,
@@ -276,6 +314,12 @@ impl Handler {
 				);
 			},
 		}
+		let _ = use_last(
+			app_interaction.guild_id.unwrap().into(),
+			app_interaction.user.id.into(),
+			command.as_ref(),
+		)
+		.await;
 	}
 
 	/// Runs an application command for Aegistrate.
@@ -285,7 +329,7 @@ impl Handler {
 	) {
 		let http = context.http();
 		if !READY_TO_GO.load(Ordering::Relaxed) {
-			let _ = Self::non_ready_respond(http, app_interaction).await;
+			let _ = Self::not_ready_respond(http, app_interaction).await;
 			return;
 		}
 
@@ -295,7 +339,16 @@ impl Handler {
 			return;
 		};
 
-		// TODO: Cooldown system comes in play here
+		let executioner_id = app_interaction.user.id;
+		let guild_id = app_interaction.guild_id.unwrap();
+		if !cooled_down(guild_id.into(), executioner_id.into(), command.as_ref())
+			.await
+			.unwrap()
+		{
+			let _ = Self::not_cooled_down_respond(http, app_interaction, command.as_ref()).await;
+			return;
+		}
+
 		Self::handle_command_execution(command, context, app_interaction).await;
 	}
 }

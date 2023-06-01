@@ -1,5 +1,5 @@
 //! Core systems that control individual features of Aegistrate.
-//! 
+//!
 //! Most of the feature APIs are provided here.
 
 pub mod command;

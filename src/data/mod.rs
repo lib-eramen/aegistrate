@@ -5,7 +5,23 @@
 //! looking at the wrong place. For those APIs (that wrap this module) that
 //! Aegistrate would use over ones provided here, it is at [`crate::core`].
 
+use crate::{
+	aegis::Aegis,
+	data::cooldown::CooldownManager,
+};
+
 pub mod cooldown;
+
+// TODO: Plugin system integration
+/// Initializes the various data structs for a guild ID.
+///
+/// # Errors
+///
+/// This function inherits errors from the various functions that interact via
+/// I/O with MongoDB.
+pub async fn init_all_data(guild_id: u64) -> Aegis<()> {
+	CooldownManager::create_default_if_not_found(guild_id).await
+}
 
 /// Implements several functions for a given struct that derives
 /// [`mongod::Mongo`], [Default] and has a `guild_id` property.
