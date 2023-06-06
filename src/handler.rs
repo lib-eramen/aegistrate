@@ -61,7 +61,6 @@ use crate::{
 	},
 	core::{
 		command::{
-			all_commands,
 			command_by_name,
 			Command,
 		},
@@ -70,6 +69,7 @@ use crate::{
 			get_remaining_cooldown,
 			use_last,
 		},
+		plugin::get_guild_commands,
 	},
 	data::init_all_data,
 };
@@ -195,7 +195,7 @@ impl Handler {
 	/// Handles command registration for a guild, using the commands from the
 	/// guild's enabled plugins.
 	async fn set_up_commands(context: &Context, guild: &UnavailableGuild) -> Aegis<()> {
-		let guild_commands = all_commands(); // TODO: Plugin system implementation
+		let guild_commands = get_guild_commands(guild.id.into()).await;
 		Self::register_commands(
 			context.http(),
 			context.cache().unwrap(),

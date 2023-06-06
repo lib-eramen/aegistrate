@@ -3,18 +3,21 @@
 //! prevent having too many commands at once per guild, as well as saves on
 //! resources for Aegistrate.
 
+use anyhow::bail;
 use enum_iterator::{
 	all,
 	Sequence,
 };
 
 use crate::{
+	aegis::Aegis,
 	commands::plugins::information::information_commands,
 	core::command::Commands,
+	data::plugin::PluginManager,
 };
 
 /// A plugin that a command semantically belongs to.
-#[derive(Debug, Copy, Clone, Eq, PartialEq, Sequence)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Sequence, Hash)]
 pub enum Plugin {
 	/// Indicates that the command performs moderation in the Discord guild.
 	Moderation,
@@ -43,6 +46,7 @@ impl Plugin {
 	pub fn from_name(name: &str) -> Option<Self> {
 		Some(match name.to_lowercase().as_str() {
 			"moderation" => Self::Moderation,
+			"information" => Self::Information,
 			_ => return None,
 		})
 	}
@@ -81,7 +85,13 @@ impl Plugin {
 	/// and is always on for all guilds when Aegistrate is added to the guild.
 	#[must_use]
 	pub fn default_plugins() -> Vec<Self> {
-		vec![Self::Moderation]
+		vec![Self::Information, Self::Moderation]
+	}
+
+	/// Checks if the plugin is a default plugin.
+	#[must_use]
+	pub fn is_default(&self) -> bool {
+		Self::default_plugins().contains(self)
 	}
 
 	/// Returns a list of default commands, by taking them from the [list of
@@ -90,4 +100,63 @@ impl Plugin {
 	pub fn default_commands() -> Commands {
 		Self::commands_by_plugins(Self::default_plugins())
 	}
+}
+
+/// Gets the plugin manager for a guild.
+///
+/// # Errors
+///
+/// This function will return an [Err] if unable to find a plugin manager for
+/// the provided guild ID.
+pub async fn get_plugin_manager(guild_id: u64) -> Aegis<PluginManager> {
+	PluginManager::find_one(guild_id).await
+}
+
+/// Gets all of the enabled commands for a particular guild.
+///
+/// # Panics
+///
+/// This function will panic if unable to find a plugin manager for the provided
+/// guild ID.
+pub async fn get_guild_commands(guild_id: u64) -> Commands {
+	get_plugin_manager(guild_id)
+		.await
+		.unwrap()
+		.get_enabled_commands()
+}
+
+/// Enables a plugin for a particular guild.
+///
+/// # Errors
+///
+/// This function will return an [Err] if unable to find a plugin manager for
+/// the provided guild ID, or if the provided plugin is already enabled for the
+/// guild.
+pub async fn enable_plugin(guild_id: u64, plugin: Plugin) -> Aegis<()> {
+	let mut plugin_manager = get_plugin_manager(guild_id).await?;
+	if plugin_manager.get_enabled_plugins().contains(&plugin) {
+		bail!(
+			"Plugin {} is already enabled for guild {guild_id}!",
+			plugin.to_name()
+		);
+	}
+	plugin_manager.enable_plugin(plugin).await
+}
+
+/// Disables a plugin for a particular guild.
+///
+/// # Errors
+///
+/// This function will return an [Err] if unable to find a plugin manager for
+/// the provided guild ID, or if the provided plugin is not enabled for the
+/// guild.
+pub async fn disable_plugin(guild_id: u64, plugin: Plugin) -> Aegis<()> {
+	let mut plugin_manager = get_plugin_manager(guild_id).await?;
+	if !plugin_manager.get_enabled_plugins().contains(&plugin) {
+		bail!(
+			"Plugin {} is already disabled for guild {guild_id}!",
+			plugin.to_name()
+		);
+	}
+	plugin_manager.disable_plugin(plugin).await
 }

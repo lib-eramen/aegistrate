@@ -7,10 +7,11 @@
 
 use crate::{
 	aegis::Aegis,
-	data::cooldown::CooldownManager,
+	data::{cooldown::CooldownManager, plugin::PluginManager},
 };
 
 pub mod cooldown;
+pub mod plugin;
 
 // TODO: Plugin system integration
 /// Initializes the various data structs for a guild ID.
@@ -20,7 +21,8 @@ pub mod cooldown;
 /// This function inherits errors from the various functions that interact via
 /// I/O with MongoDB.
 pub async fn init_all_data(guild_id: u64) -> Aegis<()> {
-	CooldownManager::create_default_if_not_found(guild_id).await
+	CooldownManager::create_default_if_not_found(guild_id).await?;
+	PluginManager::create_default_if_not_found(guild_id).await
 }
 
 /// Implements several functions for a given struct that derives
