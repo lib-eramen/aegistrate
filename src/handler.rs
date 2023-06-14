@@ -208,8 +208,8 @@ impl Handler {
 	/// Initializes all systems for Aegistrate.
 	async fn initialize_systems(context: &Context, bot_data: &Ready) -> Aegis<()> {
 		for guild in &bot_data.guilds {
-			Self::set_up_commands(context, guild).await?;
 			init_all_data(guild.id.into()).await?;
+			Self::set_up_commands(context, guild).await?;
 		}
 		Ok(())
 	}
