@@ -7,7 +7,10 @@
 
 use crate::{
 	aegis::Aegis,
-	data::{cooldown::CooldownManager, plugin::PluginManager},
+	data::{
+		cooldown::CooldownManager,
+		plugin::PluginManager,
+	},
 };
 
 pub mod cooldown;

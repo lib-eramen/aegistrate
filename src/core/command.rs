@@ -5,9 +5,15 @@
 
 use async_trait::async_trait;
 use derive_builder::Builder;
+use log::info;
 use serenity::{
 	builder::CreateApplicationCommand,
-	model::prelude::interaction::application_command::ApplicationCommandInteraction,
+	client::Cache,
+	http::Http,
+	model::prelude::{
+		interaction::application_command::ApplicationCommandInteraction,
+		GuildId,
+	},
 	prelude::Context,
 };
 
@@ -24,6 +30,9 @@ pub type Commands = Vec<Box<dyn Command>>;
 pub struct Metadata<'a> {
 	/// The name of the command.
 	pub name: &'a str,
+
+	/// The description of the command.
+	pub description: &'a str,
 
 	/// The plugin that the command belongs to.
 	pub plugin: Plugin,
@@ -44,13 +53,32 @@ impl<'a> Metadata<'a> {
 
 	/// Returns the list of all names and alises of this command.
 	#[must_use]
-	pub fn all_names(&self) -> Vec<&'a str> {
+	pub fn get_all_names(&self) -> Vec<&'a str> {
 		if let Some(mut aliases) = self.aliases.clone() {
 			aliases.push(self.name);
 			aliases
 		} else {
 			vec![self.name]
 		}
+	}
+
+	/// Returns the description of the command, noting the alias if the name
+	/// happens to be one.
+	#[must_use]
+	pub fn get_description(&self, name: &str) -> String {
+		format!(
+			"{}{}",
+			self.description,
+			if self
+				.aliases
+				.as_ref()
+				.is_some_and(|aliases| aliases.contains(&name))
+			{
+				format!(". Alias for /{}", self.name)
+			} else {
+				String::new()
+			}
+		)
 	}
 }
 
@@ -68,12 +96,14 @@ pub trait Command: Send + Sync {
 	/// to implement this method.
 	///
 	/// Note to implementors: The command handler should have already registered
-	/// the name as well as the aliases for the command, so no worries doing
+	/// the name, aliases and description for the command, so no worries doing
 	/// that in this function.
 	fn register<'a>(
 		&self,
 		command: &'a mut CreateApplicationCommand,
-	) -> &'a mut CreateApplicationCommand;
+	) -> &'a mut CreateApplicationCommand {
+		command
+	}
 
 	/// Executes this command.
 	async fn execute(
@@ -81,6 +111,31 @@ pub trait Command: Send + Sync {
 		context: &Context,
 		interaction: &ApplicationCommandInteraction,
 	) -> Aegis<()>;
+
+	/// Registers all of this command's names and aliases.
+	async fn register_to_guild<'a>(
+		&self,
+		http: &'a Http,
+		cache: &'a Cache,
+		guild: GuildId,
+	) -> Aegis<()> {
+		for name in self.metadata().get_all_names() {
+			guild
+				.create_application_command(http, |endpoint| {
+					self.register(endpoint)
+						.name(name)
+						.description(self.metadata().get_description(name))
+				})
+				.await?;
+		}
+		info!(
+			"Guild \"{}\" ({}) registered /{}",
+			guild.name(cache).unwrap_or_else(|| "<null>".to_string()),
+			guild.0,
+			self.metadata().name
+		);
+		Ok(())
+	}
 }
 
 /// Returns all commands there are in Aegistrate.
@@ -96,5 +151,5 @@ pub fn all_commands() -> Commands {
 pub fn command_by_name(name: &str) -> Option<Box<dyn Command>> {
 	all_commands()
 		.into_iter()
-		.find(|command| command.metadata().all_names().contains(&name))
+		.find(|command| command.metadata().get_all_names().contains(&name))
 }

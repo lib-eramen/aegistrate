@@ -21,7 +21,7 @@ use crate::{
 
 /// A struct that manages plugins for guilds.
 /// Plugins are stored by their names.
-#[derive(Bson, Mongo, Clone)]
+#[derive(Bson, Mongo, Clone, Default)]
 #[mongo(collection = "plugin", field, filter, update)]
 #[must_use]
 #[rustfmt::skip]
@@ -31,19 +31,6 @@ pub struct PluginManager {
 
     /// The guild's enaled plugin names.
     pub enabled_plugin_names: HashSet<String>,
-}
-
-impl Default for PluginManager {
-	fn default() -> Self {
-		Self {
-			guild_id: Default::default(),
-			enabled_plugin_names: Plugin::default_plugins()
-				.into_iter()
-				.map(Plugin::to_name)
-				.map(&str::to_string)
-				.collect(),
-		}
-	}
 }
 
 common_db_impl!(PluginManager, self, {
@@ -64,6 +51,7 @@ impl PluginManager {
 		self.enabled_plugin_names
 			.iter()
 			.map(|name| Plugin::from_name(name).unwrap())
+			.chain(Plugin::default_plugins())
 			.collect()
 	}
 
@@ -88,14 +76,15 @@ impl PluginManager {
 		self.update_entry().await
 	}
 
-    /// Removes a plugin from the list of enabled plugins.
+	/// Removes a plugin from the list of enabled plugins.
 	///
 	/// # Errors
 	///
 	/// This function might return an [Err] if something happens during I/O to
 	/// the database.
 	pub async fn disable_plugin(&mut self, plugin: Plugin) -> Aegis<()> {
-		self.enabled_plugin_names.remove(&plugin.to_name().to_string());
+		self.enabled_plugin_names
+			.remove(&plugin.to_name().to_string());
 		self.update_entry().await
 	}
 }

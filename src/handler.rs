@@ -149,27 +149,6 @@ impl Handler {
 		);
 	}
 
-	/// Registers a command to a guild.
-	async fn register_command(
-		http: &Http,
-		cache: &Cache,
-		guild: GuildId,
-		command: Box<dyn Command>,
-	) -> Aegis<()> {
-		for name in command.metadata().all_names() {
-			guild
-				.create_application_command(http, |endpoint| command.register(endpoint).name(name))
-				.await?;
-		}
-		info!(
-			"Guild \"{}\" ({}) registered /{}",
-			guild.name(cache).unwrap_or_else(|| "<null>".to_string()),
-			guild.0,
-			command.metadata().name
-		);
-		Ok(())
-	}
-
 	/// Registers multiple commands to a guild.
 	#[allow(clippy::cast_possible_wrap)]
 	async fn register_commands(
@@ -180,7 +159,7 @@ impl Handler {
 	) -> Aegis<()> {
 		let commands_count = commands.len();
 		for command in commands {
-			Self::register_command(http, cache, guild, command).await?;
+			command.register_to_guild(http, cache, guild).await?;
 			sleep(Duration::from_secs_f32(REGISTER_COMMAND_INTERVAL)).await;
 		}
 		info!(
@@ -195,6 +174,10 @@ impl Handler {
 	/// Handles command registration for a guild, using the commands from the
 	/// guild's enabled plugins.
 	async fn set_up_commands(context: &Context, guild: &UnavailableGuild) -> Aegis<()> {
+		guild
+			.id
+			.set_application_commands(context.http(), |commands| commands)
+			.await?;
 		let guild_commands = get_guild_commands(guild.id.into()).await;
 		Self::register_commands(
 			context.http(),

@@ -5,7 +5,6 @@ use std::time::Instant;
 
 use async_trait::async_trait;
 use serenity::{
-	builder::CreateApplicationCommand,
 	http::CacheHttp,
 	model::prelude::interaction::application_command::ApplicationCommandInteraction,
 	prelude::Context,
@@ -41,18 +40,12 @@ impl Command for Ping {
 	fn metadata(&self) -> Metadata<'_> {
 		Metadata::builder()
 			.name("ping")
+			.description("Returns the ping of the bot. Pong!")
 			.plugin(Plugin::Information)
 			.cooldown_secs(1)
 			.aliases(Some(vec!["am-i-alive"]))
 			.build()
 			.unwrap()
-	}
-
-	fn register<'a>(
-		&self,
-		command: &'a mut CreateApplicationCommand,
-	) -> &'a mut CreateApplicationCommand {
-		command.description("Returns the ping of the bot. Pong!")
 	}
 
 	async fn execute(
@@ -64,7 +57,7 @@ impl Command for Ping {
 			context.http(),
 			interaction,
 			ResponseOptions::CreateOrignial(false),
-			Some("I'm alive and running".to_string()),
+			Some("Pong in progress...".to_string()),
 		)
 		.await?;
 

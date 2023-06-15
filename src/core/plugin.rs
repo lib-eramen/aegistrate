@@ -3,27 +3,46 @@
 //! prevent having too many commands at once per guild, as well as saves on
 //! resources for Aegistrate.
 
+#![allow(clippy::match_str_case_mismatch)]
+
+use std::time::Duration;
+
 use anyhow::bail;
 use enum_iterator::{
 	all,
 	Sequence,
 };
+use serenity::{
+	http::Http,
+	model::prelude::GuildId,
+};
+use tokio::time::sleep;
 
 use crate::{
 	aegis::Aegis,
-	commands::plugins::information::information_commands,
-	core::command::Commands,
+	commands::plugins::{
+		information::information_commands,
+		plugins::plugin_commands,
+	},
+	core::command::{
+		Command,
+		Commands,
+	},
 	data::plugin::PluginManager,
+	handler::REGISTER_COMMAND_INTERVAL,
 };
 
 /// A plugin that a command semantically belongs to.
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Sequence, Hash)]
 pub enum Plugin {
-	/// Indicates that the command performs moderation in the Discord guild.
+	/// Performs moderation in the Discord guild.
 	Moderation,
 
-	/// Indicates that the command provides information about something.
+	/// Provides information about something.
 	Information,
+
+	/// Manipulates the plugin settings of a guild.
+	Plugins,
 }
 
 impl Plugin {
@@ -44,9 +63,10 @@ impl Plugin {
 	/// Converts this enum from a name.
 	#[must_use]
 	pub fn from_name(name: &str) -> Option<Self> {
-		Some(match name.to_lowercase().as_str() {
-			"moderation" => Self::Moderation,
-			"information" => Self::Information,
+		Some(match name {
+			"Moderation" => Self::Moderation,
+			"Information" => Self::Information,
+			"Plugins" => Self::Plugins,
 			_ => return None,
 		})
 	}
@@ -56,8 +76,9 @@ impl Plugin {
 	#[allow(clippy::missing_panics_doc)]
 	pub fn to_name(self) -> &'static str {
 		match self {
-			Self::Moderation => "moderation",
-			Self::Information => "information",
+			Self::Moderation => "Moderation",
+			Self::Information => "Information",
+			Self::Plugins => "Plugins",
 		}
 	}
 
@@ -73,6 +94,7 @@ impl Plugin {
 		match self {
 			Self::Information => information_commands(),
 			Self::Moderation => vec![],
+			Self::Plugins => plugin_commands(),
 		}
 	}
 
@@ -85,13 +107,28 @@ impl Plugin {
 	/// and is always on for all guilds when Aegistrate is added to the guild.
 	#[must_use]
 	pub fn default_plugins() -> Vec<Self> {
-		vec![Self::Information, Self::Moderation]
+		vec![Self::Information, Self::Moderation, Self::Plugins]
 	}
 
 	/// Checks if the plugin is a default plugin.
 	#[must_use]
 	pub fn is_default(&self) -> bool {
 		Self::default_plugins().contains(self)
+	}
+
+	/// Returns the [Option]al command associated with setting up the plugin.
+	#[must_use]
+	#[allow(clippy::match_single_binding)]
+	pub fn get_setup_command(&self) -> Option<Box<dyn Command>> {
+		match self {
+			_ => None,
+		}
+	}
+
+	/// Checks if the plugin requires setup before using its commands.
+	#[must_use]
+	pub fn requires_setup(&self) -> bool {
+		self.get_setup_command().is_some()
 	}
 
 	/// Returns a list of default commands, by taking them from the [list of
@@ -132,13 +169,19 @@ pub async fn get_guild_commands(guild_id: u64) -> Commands {
 /// This function will return an [Err] if unable to find a plugin manager for
 /// the provided guild ID, or if the provided plugin is already enabled for the
 /// guild.
-pub async fn enable_plugin(guild_id: u64, plugin: Plugin) -> Aegis<()> {
+pub async fn enable_plugin(guild_id: u64, plugin: Plugin, http: &Http) -> Aegis<()> {
 	let mut plugin_manager = get_plugin_manager(guild_id).await?;
 	if plugin_manager.get_enabled_plugins().contains(&plugin) {
 		bail!(
-			"Plugin {} is already enabled for guild {guild_id}!",
+			"Plugin {} is already enabled for the current guild ({guild_id})!",
 			plugin.to_name()
 		);
+	}
+	for command in plugin.get_commands() {
+		GuildId(guild_id)
+			.create_application_command(http, |endpoint| command.register(endpoint))
+			.await?;
+		sleep(Duration::from_secs_f32(REGISTER_COMMAND_INTERVAL)).await;
 	}
 	plugin_manager.enable_plugin(plugin).await
 }
