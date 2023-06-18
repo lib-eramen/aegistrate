@@ -75,12 +75,17 @@ use crate::{
 };
 
 /// Spawns a timeout checker that exits the program if [`DISCORD_READY`] is not
-/// set to `true` after [`READY_UP_TIME`].
+/// set to `true` after an environment-specified number of seconds.
 pub fn spawn_timeout_checker() {
 	thread::spawn(|| {
-		thread::sleep(READY_UP_TIME);
+		let ready_up_time = var("READYUP_SECONDS")
+			.map(|secs| secs.parse::<u64>().unwrap_or(10))
+			.unwrap_or(10);
+
+		
+		thread::sleep(Duration::from_secs(ready_up_time));
 		if !DISCORD_READY.load(Ordering::Relaxed) {
-			error!("Services not ready for {READY_UP_TIME:#?}");
+			error!("Services not ready for {ready_up_time} seconds");
 			std::process::exit(1);
 		}
 	});
@@ -375,10 +380,6 @@ pub static REGISTER_COMMAND_INTERVAL: f32 = 1.0;
 /// Controls whether the Discord service portion is ready to go.
 /// Take a look at [`spawn_timeout_checker`] to see how this variable is used.
 pub static DISCORD_READY: AtomicBool = AtomicBool::new(false);
-
-/// The time reserved for Aegistrate to spin up everything.
-/// Take a look at [`spawn_timeout_checker`] to see how this variable is used.
-pub static READY_UP_TIME: Duration = Duration::new(10, 0);
 
 /// The bot user that Aegistrate assumes identity of.
 /// To access with knowledge that it has been initialized, use

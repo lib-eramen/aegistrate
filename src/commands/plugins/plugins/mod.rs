@@ -11,6 +11,6 @@ pub fn plugin_commands() -> Commands {
 	vec![Box::new(EnablePlugin)]
 }
 
-pub mod enable_plugin;
 // pub mod disable_plugin;
+pub mod enable_plugin;
 // pub mod enabled_plugins;

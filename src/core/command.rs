@@ -74,7 +74,7 @@ impl<'a> Metadata<'a> {
 				.as_ref()
 				.is_some_and(|aliases| aliases.contains(&name))
 			{
-				format!(". Alias for /{}", self.name)
+				format!(" Alias for /{}", self.name)
 			} else {
 				String::new()
 			}

@@ -57,7 +57,7 @@ impl Command for EnablePlugin {
 			.description("Enables a plugin for the current guild.")
 			.plugin(Plugin::Plugins)
 			.cooldown_secs(10)
-			.aliases(None)
+			.aliases(Some(vec!["flip-switches-on"]))
 			.build()
 			.unwrap()
 	}
