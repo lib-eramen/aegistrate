@@ -76,19 +76,12 @@ use crate::{
 
 /// Spawns a timeout checker that exits the program if [`DISCORD_READY`] is not
 /// set to `true` after an environment-specified number of seconds.
-pub fn spawn_timeout_checker() {
-	thread::spawn(|| {
-		let ready_up_time = var("READYUP_SECONDS")
-			.map(|secs| secs.parse::<u64>().unwrap_or(10))
-			.unwrap_or(10);
-
-		
-		thread::sleep(Duration::from_secs(ready_up_time));
-		if !DISCORD_READY.load(Ordering::Relaxed) {
-			error!("Services not ready for {ready_up_time} seconds");
-			std::process::exit(1);
-		}
-	});
+pub fn spawn_timeout_checker(ready_up_time: u64) {
+	thread::sleep(Duration::from_secs(ready_up_time));
+	if !DISCORD_READY.load(Ordering::Relaxed) {
+		error!("Services not ready for {ready_up_time} seconds");
+		std::process::exit(1);
+	}
 }
 
 /// Unit struct that implements [`EventHandler`]. Is Aegistrate's core Discord
