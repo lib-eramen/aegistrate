@@ -3,7 +3,6 @@
 //! Aegistrate's state.
 
 use std::{
-	env::var,
 	sync::atomic::{
 		AtomicBool,
 		Ordering,
@@ -72,16 +71,21 @@ use crate::{
 		plugin::get_guild_commands,
 	},
 	data::init_all_data,
+	exec_config::get_exec_config,
 };
 
 /// Spawns a timeout checker that exits the program if [`DISCORD_READY`] is not
 /// set to `true` after an environment-specified number of seconds.
-pub fn spawn_timeout_checker(ready_up_time: u64) {
-	thread::sleep(Duration::from_secs(ready_up_time));
-	if !DISCORD_READY.load(Ordering::Relaxed) {
-		error!("Services not ready for {ready_up_time} seconds");
-		std::process::exit(1);
-	}
+#[allow(clippy::cast_sign_loss)]
+pub fn spawn_timeout_checker() {
+	thread::spawn(move || {
+		let ready_up_time = get_exec_config().timeout_seconds;
+		thread::sleep(Duration::from_secs(ready_up_time as u64));
+		if !DISCORD_READY.load(Ordering::Relaxed) {
+			error!("Services not ready for {ready_up_time} seconds");
+			std::process::exit(1);
+		}
+	});
 }
 
 /// Unit struct that implements [`EventHandler`]. Is Aegistrate's core Discord
@@ -338,7 +342,7 @@ impl Handler {
 #[allow(clippy::missing_errors_doc)]
 pub async fn set_up_database() -> Aegis<()> {
 	let _ = MONGODB_CLIENT.set(mongod::Client::from_client(
-		mongodb::Client::with_uri_str(var("MONGODB_URI")?).await?,
+		mongodb::Client::with_uri_str(&get_exec_config().mongodb_uri).await?,
 		"development",
 	));
 	Ok(())

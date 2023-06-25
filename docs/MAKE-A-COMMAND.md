@@ -5,7 +5,7 @@ I (`@developer-ramen`) blame myself for the system that I have put in place.
 
 Here are a few instructions to add commands so that it actually makes the destination, that is the Slash Command registraton Discord API endpoint:
 
-1. Fill all of the metadata points. What is the name, the plugin it belongs to, and what cooldown should it have?
+1. Fill all of the metadata points. What the name is, the plugin it belongs to, and what cooldown should it have, etc.
 2. If the command requires a new plugin, add the plugin to these places first:
     - The `Plugin` enum. (`src/core/plugin.rs`)
     - Clippy/`cargo check` should tell you all the places to add the new enum variant to.

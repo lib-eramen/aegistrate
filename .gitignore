@@ -19,3 +19,7 @@ Cargo.lock
 # Added by cargo
 /target
 .env
+
+# Aegistrate configuration files
+aegistrate.toml
+exec-config.toml
