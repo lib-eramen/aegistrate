@@ -3,12 +3,20 @@
 
 use std::{
 	env::var,
-	fs::read_to_string,
-	path::Path,
+	fs::{
+		create_dir_all,
+		read_to_string,
+		OpenOptions,
+	},
+	io::Write,
+	path::PathBuf,
 };
 
 use anyhow::bail;
-use log::error;
+use log::{
+	error,
+	info,
+};
 use serde::{
 	Deserialize,
 	Serialize,
@@ -23,22 +31,91 @@ use crate::aegis::{
 /// Aegistrate's global execution configuration.
 pub static GLOBAL_EXEC_CONFIG: OnceCell<ExecConfig> = OnceCell::const_new();
 
+/// Aegistrate's preferred path to its execution configuration.
+///
+/// Note that this path is **NOT COMPLETE** - one has to join the home directory
+/// with this path to work. Use the path returned by
+/// [`get_preferred_config_path`] for convenience.
+pub static PREFERRED_CONFIG_PATH: &str = ".config/aegistrate/aegistrate.toml";
+
+/// Gets the complete preferred config path for Aegistrate.
+///
+/// # Panics
+///
+/// This function will panic if [`home::home_dir`] returns a [None] (which is
+/// unwrapped)
+#[must_use]
+pub fn get_preferred_config_path() -> PathBuf {
+	home::home_dir().unwrap().join(PREFERRED_CONFIG_PATH)
+}
+
 /// Initializes the [`EXEC_CONFIG`] static variable.
-pub fn initialize_exec_config<'a>() -> Aegis<()> {
+///
+/// # Errors
+///
+/// This function will return an error when no execution configuration files
+/// were found.
+#[allow(clippy::missing_panics_doc)]
+pub fn initialize_exec_config() -> Aegis<()> {
 	let exec_config = ExecConfig::fetch();
 	if exec_config.is_none() {
+		let preferred_config_path = get_preferred_config_path();
+		let display_path = preferred_config_path.display();
+		error!("No valid execution configuration files are found for Aegistrate!");
 		error!(
-			"No execution configuration files are found for Aegistrate! To get started, create a \
-			 .env file in the repo directory, or create one in aegistrate.toml! See the \
-			 documentation in docs/EXEC-CONFIG.md for more info."
+			"If there exists an execution configuration file for Aegistrate, check to see if it \
+			 has all the keys required for Aegistrate to run. Refer to docs/EXEC-CONFIG.md for \
+			 more info."
 		);
+		error!(
+			"Otherwise, create a .env file in the repo directory, or create one in \
+			 {display_path}! See the documentation in docs/EXEC-CONFIG.md for more info."
+		);
+		error!(
+			"Aegistrate should have created a config file at {display_path} when this error was \
+			 generated. If you see an error similar to \"Error 21: Is a directory\", check if the \
+			 file at the end of this path: {display_path} is actually a file."
+		);
+		create_default_exec_config().map(|_| {
+			info!(
+				"Created an exec-config file at {display_path}. This file should contain some \
+				 basic starter options so that you can fill it in and get started with running \
+				 Aegistrate."
+			);
+		})?;
 		bail!("No execution configuration files found.");
 	}
 	aegisize_unit(GLOBAL_EXEC_CONFIG.set(exec_config.unwrap()))
 }
 
+/// Creates a default, empty version of an Aegistrate execution configuration in
+/// `~/.config/aegistrate/aegistrate.toml`.
+///
+/// # Errors
+///
+/// This function propagates errors from I/O functions called.
+#[allow(clippy::missing_panics_doc)]
+pub fn create_default_exec_config() -> Aegis<()> {
+	let mut config_path = get_preferred_config_path();
+	config_path.pop();
+	create_dir_all(&config_path)?;
+
+	config_path.push("aegistrate.toml");
+	let default_config = ExecConfig::default();
+	let mut file = OpenOptions::new()
+		.read(true)
+		.write(true)
+		.create(true)
+		.open(config_path)?;
+	aegisize_unit(file.write_all(toml::to_string(&default_config).unwrap().as_bytes()))
+}
+
 /// Fetches the execution configuration for Aegistrate, hidden behind a layer of
 /// [`OnceCell`].
+///
+/// # Panics
+///
+/// This function will panic if the [`GLOBAL_EXEC_CONFIG`] is not initialized.
 pub fn get_exec_config<'a>() -> &'a ExecConfig {
 	GLOBAL_EXEC_CONFIG.get().unwrap()
 }
@@ -48,7 +125,7 @@ pub fn get_exec_config<'a>() -> &'a ExecConfig {
 /// This struct contains **critical** information, never to be logged, nor to be
 /// written to anywhere else visible by a third party.
 #[must_use]
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct ExecConfig {
 	/// The bot token used for authentication with the Discord API.
 	pub discord_bot_token: String,
@@ -93,14 +170,14 @@ impl ExecConfig {
 }
 
 /// Gets the execution config file for Aegistrate, and parses it.
-/// The function will only look inside the repo directory for ``
+/// The function will only look inside `~/.config/aegistrate/aegistrate.toml`
 ///
 /// # Errors
 ///
 /// The function might fail if [`read_to_string`] fails, or if no Aegistrate
 /// execution configuration files were found.
 pub fn get_exec_config_file() -> Aegis<String> {
-	let path_to_config = Path::new("./aegistrate.toml");
+	let path_to_config = get_preferred_config_path();
 	if path_to_config.try_exists()? {
 		return Ok(read_to_string(path_to_config)?);
 	}

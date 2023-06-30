@@ -23,7 +23,6 @@ use handler::{
 	spawn_timeout_checker,
 	Handler,
 };
-use log::error;
 use serenity::{
 	prelude::GatewayIntents,
 	Client,
@@ -49,7 +48,6 @@ async fn main() -> Aegis<()> {
 
 	initialize_exec_config()?;
 	spawn_timeout_checker();
-	error!("Done!");
 
 	let mut discord_client =
 		Client::builder(&get_exec_config().discord_bot_token, GatewayIntents::all())

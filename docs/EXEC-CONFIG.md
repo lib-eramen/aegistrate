@@ -12,11 +12,11 @@ The configuration will contain key-value pairs in either form:
 The keys required to run the program is:
 - `discord-bot-token` (TOML) or `DISCORD_BOT_TOKEN` (env): The bot token in order to authenticate with the Discord API.
 - `mongodb-uri` (TOML) or `MONGODB_URI` (env): The MongoDB URI to connect to the database used in Aegistrate.
-- `timeout-seconds` (TOML) or `TIMEOUT_SECONDS` (env):    How many seconds to wait for Aegistrate to start up before exiting with an error. If this key is not found, 10 seconds is the default value.
+- `timeout-seconds` (TOML) or `TIMEOUT_SECONDS` (env): How many seconds to wait for Aegistrate to start up before exiting with an error. If this key is not found, 10 seconds is the default value.
 
 ### Examples of what it looks like
 
-#### `./aegistrate.toml`
+#### `~/.config/aegistrate/aegistrate.toml`
 
 ```toml
 discord_bot_token = "<insert bot token here>"
@@ -36,8 +36,8 @@ TIMEOUT_SECONDS=10
 
 No, it is not some sort of package you need to `apt-get install`, it is just a term.
 
-Aegistrate will look for its configuration in the following locations:
-- `./aegistrate.toml`
+Aegistrate will look for its configuration in the following locations only:
+- `~/.config/aegistrate/aegistrate.toml`
 - `.env` or environment variables (fallback option, **not recommended**)
 
 ## If you came here because Aegistrate failed to run...
