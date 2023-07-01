@@ -110,6 +110,15 @@ impl Plugin {
 		vec![Self::Information, Self::Moderation, Self::Plugins]
 	}
 
+	/// Returns a list of non-default plugins.
+	#[must_use]
+	pub fn non_default_plugins() -> Vec<Self> {
+		let default_plugins = Self::default_plugins();
+		all::<Self>()
+			.filter(|plugin| !default_plugins.contains(plugin))
+			.collect()
+	}
+
 	/// Checks if the plugin is a default plugin.
 	#[must_use]
 	pub fn is_default(&self) -> bool {

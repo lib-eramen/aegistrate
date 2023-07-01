@@ -2,7 +2,6 @@
 //! [`EnablePlugin`].
 
 use async_trait::async_trait;
-use enum_iterator::all;
 use serenity::{
 	builder::CreateApplicationCommand,
 	http::CacheHttp,
@@ -45,19 +44,19 @@ use crate::{
 	},
 };
 
-/// The unit struct containing the implementation for the `/enable-plugin`
+/// The unit struct containing the implementation for the `/enable`
 /// command.
-pub struct EnablePlugin;
+pub struct Enable;
 
 #[async_trait]
-impl Command for EnablePlugin {
+impl Command for Enable {
 	fn metadata(&self) -> Metadata<'_> {
 		Metadata::builder()
-			.name("enable-plugin")
+			.name("enable")
 			.description("Enables a plugin for the current guild.")
 			.plugin(Plugin::Plugins)
 			.cooldown_secs(10)
-			.aliases(Some(vec!["flip-switches-on"]))
+			.aliases(None)
 			.build()
 			.unwrap()
 	}
@@ -67,7 +66,10 @@ impl Command for EnablePlugin {
 		command: &'a mut CreateApplicationCommand,
 	) -> &'a mut CreateApplicationCommand {
 		command.create_option(|plugin| {
-			for plugin_name in all::<Plugin>().map(Plugin::to_name) {
+			for plugin_name in Plugin::non_default_plugins()
+				.into_iter()
+				.map(Plugin::to_name)
+			{
 				plugin.add_string_choice(plugin_name, plugin_name);
 			}
 			plugin
@@ -103,9 +105,9 @@ impl Command for EnablePlugin {
 			respond_with_embed(http, interaction, ResponseOptions::EditOriginal, |embed| {
 				create_error_embed(
 					embed,
-					format!("An error happened: {why}"),
+					format!("An error happened: `{why}`"),
 					format!(
-						"The plugin \"{}\" might have been already enabled, setup steps weren't \
+						"The plugin `{}` might have been already enabled, setup steps weren't \
 						 completed, or something has gone horribly wrong on our side. In that \
 						 case... oops?",
 						plugin.to_name()
@@ -119,7 +121,7 @@ impl Command for EnablePlugin {
 			respond_with_embed(http, interaction, ResponseOptions::EditOriginal, |embed| {
 				create_success_embed(
 					embed,
-					"Switches flipped!",
+					format!("Plugin {} enabled!", plugin.to_name()),
 					format!(
 						"Successfully enabled plugin {}! Commands that were enabled for your \
 						 guild were: {}",
