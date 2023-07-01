@@ -178,8 +178,11 @@ impl Handler {
 	async fn set_up_commands(context: &Context, guild: &UnavailableGuild) -> Aegis<()> {
 		guild
 			.id
-			.set_application_commands(context.http(), |commands| commands)
+			.set_application_commands(context.http(), |commands| {
+				commands.set_application_commands(vec![])
+			})
 			.await?;
+
 		let guild_commands = get_guild_commands(guild.id.into()).await;
 		Self::register_commands(
 			context.http(),
@@ -213,7 +216,7 @@ impl Handler {
 					embed,
 					"Rude! I'm not even done getting ready!",
 					"Aegistrate hasn't finished all of its ready-up procedures. Coffee takes time \
-					 to brew, y'know!",
+					 to brew, you know?",
 					Some(
 						"Give Aegistrate a bit of time - you should see its status turn from Do \
 						 Not Disturb to Online soon!",
