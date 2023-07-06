@@ -43,6 +43,6 @@ Aegistrate will look for its configuration in the following locations only:
 ## If you came here because Aegistrate failed to run...
 
 You can manually put a config file with all the entries required:
-1. Create the aegistrate.toml file inside the repository folder.
+1. Create the aegistrate.toml file inside the repository folder. Aegistrate might have already put a file at `~/.config/aegistrate/aegistrate.toml` for you.
 2. Put the template provided above into the TOML file.
 3. Customize and fill out the keys for the Discord bot token and MongoDB URI.
