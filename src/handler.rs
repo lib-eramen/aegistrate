@@ -192,7 +192,7 @@ impl Handler {
 			})
 			.await?;
 
-		let guild_commands = get_guild_commands().await;
+		let guild_commands = get_guild_commands().await?;
 		Self::register_commands(
 			context.http(),
 			context.cache().unwrap(),
@@ -343,7 +343,7 @@ impl Handler {
 pub async fn set_up_database() -> Aegis<()> {
 	let _ = MONGODB_CLIENT.set(mongod::Client::from_client(
 		mongodb::Client::with_uri_str(&get_exec_config().mongodb_uri).await?,
-		"development",
+		"production",
 	));
 	Ok(())
 }

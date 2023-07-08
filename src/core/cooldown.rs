@@ -13,18 +13,8 @@ use std::time::{
 use crate::{
 	aegis::Aegis,
 	core::command::Command,
-	data::cooldown::CooldownManager,
+	data::cooldown::CooldownData,
 };
-
-/// Gets the cooldown manager for a guild.
-///
-/// # Errors
-///
-/// This function will return an [Err] if unable to find a cooldown manager for
-/// the provided guild ID.
-pub async fn get_cooldown_manager() -> Aegis<CooldownManager> {
-	CooldownManager::find_one().await
-}
 
 /// Gets the remaining seconds to wait for a cooldown to finish.
 ///
@@ -41,8 +31,7 @@ pub async fn get_remaining_cooldown(user_id: u64, command: &dyn Command) -> Aegi
 		.duration_since(UNIX_EPOCH)
 		.unwrap()
 		.as_secs();
-	let manager = get_cooldown_manager().await?;
-	let last_use = manager.get_last_use(user_id, command.metadata().name);
+	let last_use = CooldownData::get_last_use(user_id, command.metadata().name).await?;
 	let cooldown = command.metadata().cooldown_secs;
 
 	Ok(if let Some(last_use) = last_use {
@@ -85,8 +74,5 @@ pub async fn use_last(user_id: u64, command: &dyn Command) -> Aegis<()> {
 		.duration_since(UNIX_EPOCH)
 		.unwrap()
 		.as_secs();
-	get_cooldown_manager()
-		.await?
-		.create_last_use(user_id, command.metadata().name, now)
-		.await
+	CooldownData::create_last_use(user_id, command.metadata().name, now).await
 }

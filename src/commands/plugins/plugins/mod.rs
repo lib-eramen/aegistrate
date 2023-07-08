@@ -1,14 +1,17 @@
 //! Contains commands that manipulates plugin settings of a guild.
 
 use crate::{
-	commands::plugins::plugins::enable::Enable,
+	commands::plugins::plugins::{
+		disable::Disable,
+		enable::Enable,
+	},
 	core::command::Commands,
 };
 
 /// Returns all commads belonging to the [plugin](self) plugin.
 #[must_use]
 pub fn plugin_commands() -> Commands {
-	vec![Box::new(Enable)]
+	vec![Box::new(Enable), Box::new(Disable)]
 }
 
 pub mod disable;
