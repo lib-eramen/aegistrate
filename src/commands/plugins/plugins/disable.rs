@@ -98,8 +98,7 @@ impl Command for Disable {
 		)))
 		.unwrap();
 
-		let guild_id = interaction.guild_id.unwrap();
-		if let Err(why) = disable_plugin(guild_id.into(), plugin, context).await {
+		if let Err(why) = disable_plugin(plugin, context).await {
 			respond_with_embed(http, interaction, ResponseOptions::EditOriginal, |embed| {
 				create_error_embed(
 					embed,

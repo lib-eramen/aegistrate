@@ -26,9 +26,6 @@ use crate::{
 #[must_use]
 #[rustfmt::skip]
 pub struct PluginManager {
-    /// The guild ID that this struct manages.
-    pub guild_id: u64,
-
     /// The guild's enaled plugin names.
     pub enabled_plugin_names: HashSet<String>,
 }

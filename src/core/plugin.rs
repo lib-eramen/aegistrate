@@ -27,6 +27,7 @@ use crate::{
 	},
 	core::command::Commands,
 	data::plugin::PluginManager,
+	exec_config::get_exec_config,
 	handler::{
 		Handler,
 		REGISTER_COMMAND_INTERVAL,
@@ -146,8 +147,8 @@ impl Plugin {
 ///
 /// This function will return an [Err] if unable to find a plugin manager for
 /// the provided guild ID.
-pub async fn get_plugin_manager(guild_id: u64) -> Aegis<PluginManager> {
-	PluginManager::find_one(guild_id).await
+pub async fn get_plugin_manager() -> Aegis<PluginManager> {
+	PluginManager::find_one().await
 }
 
 /// Gets all of the enabled commands for a particular guild.
@@ -156,11 +157,8 @@ pub async fn get_plugin_manager(guild_id: u64) -> Aegis<PluginManager> {
 ///
 /// This function will panic if unable to find a plugin manager for the provided
 /// guild ID.
-pub async fn get_guild_commands(guild_id: u64) -> Commands {
-	get_plugin_manager(guild_id)
-		.await
-		.unwrap()
-		.get_enabled_commands()
+pub async fn get_guild_commands() -> Commands {
+	get_plugin_manager().await.unwrap().get_enabled_commands()
 }
 
 /// Enables a plugin for a particular guild.
@@ -170,16 +168,16 @@ pub async fn get_guild_commands(guild_id: u64) -> Commands {
 /// This function will return an [Err] if unable to find a plugin manager for
 /// the provided guild ID, or if the provided plugin is already enabled for the
 /// guild.
-pub async fn enable_plugin(guild_id: u64, plugin: Plugin, http: &Http) -> Aegis<()> {
-	let mut plugin_manager = get_plugin_manager(guild_id).await?;
+pub async fn enable_plugin(plugin: Plugin, http: &Http) -> Aegis<()> {
+	let mut plugin_manager = get_plugin_manager().await?;
 	if plugin_manager.get_enabled_plugins().contains(&plugin) {
 		bail!(
-			"Plugin {} is already enabled for the current guild ({guild_id})!",
+			"Plugin {} is already enabled for the current guild!",
 			plugin.to_name()
 		);
 	}
 	for command in plugin.get_commands() {
-		GuildId(guild_id)
+		GuildId(get_exec_config().guild_id)
 			.create_application_command(http, |endpoint| command.register(endpoint))
 			.await?;
 		sleep(Duration::from_secs_f32(REGISTER_COMMAND_INTERVAL)).await;
@@ -194,14 +192,14 @@ pub async fn enable_plugin(guild_id: u64, plugin: Plugin, http: &Http) -> Aegis<
 /// This function will return an [Err] if unable to find a plugin manager for
 /// the provided guild ID, or if the provided plugin is not enabled for the
 /// guild.
-pub async fn disable_plugin(guild_id: u64, plugin: Plugin, context: &Context) -> Aegis<()> {
-	let mut plugin_manager = get_plugin_manager(guild_id).await?;
+pub async fn disable_plugin(plugin: Plugin, context: &Context) -> Aegis<()> {
+	let mut plugin_manager = get_plugin_manager().await?;
 	if !plugin_manager.get_enabled_plugins().contains(&plugin) {
 		bail!(
-			"Plugin {} is already disabled for guild {guild_id}!",
+			"Plugin {} is already disabled for the current guild!",
 			plugin.to_name()
 		);
 	}
 	plugin_manager.disable_plugin(plugin).await?;
-	Handler::set_up_commands(context, GuildId(guild_id)).await
+	Handler::set_up_commands(context).await
 }

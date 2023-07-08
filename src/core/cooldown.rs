@@ -22,8 +22,8 @@ use crate::{
 ///
 /// This function will return an [Err] if unable to find a cooldown manager for
 /// the provided guild ID.
-pub async fn get_cooldown_manager(guild_id: u64) -> Aegis<CooldownManager> {
-	CooldownManager::find_one(guild_id).await
+pub async fn get_cooldown_manager() -> Aegis<CooldownManager> {
+	CooldownManager::find_one().await
 }
 
 /// Gets the remaining seconds to wait for a cooldown to finish.
@@ -36,16 +36,12 @@ pub async fn get_cooldown_manager(guild_id: u64) -> Aegis<CooldownManager> {
 ///
 /// This function panics if [`SystemTime::now`] happens to be earlier than
 /// [`UNIX_EPOCH`], which, why, you sneaky bastard?
-pub async fn get_remaining_cooldown(
-	guild_id: u64,
-	user_id: u64,
-	command: &dyn Command,
-) -> Aegis<u64> {
+pub async fn get_remaining_cooldown(user_id: u64, command: &dyn Command) -> Aegis<u64> {
 	let now = SystemTime::now()
 		.duration_since(UNIX_EPOCH)
 		.unwrap()
 		.as_secs();
-	let manager = get_cooldown_manager(guild_id).await?;
+	let manager = get_cooldown_manager().await?;
 	let last_use = manager.get_last_use(user_id, command.metadata().name);
 	let cooldown = command.metadata().cooldown_secs;
 
@@ -68,8 +64,8 @@ pub async fn get_remaining_cooldown(
 /// # Errors
 ///
 /// This function will propagate errors from [`get_remaining_cooldown`].
-pub async fn cooled_down(guild_id: u64, user_id: u64, command: &dyn Command) -> Aegis<bool> {
-	get_remaining_cooldown(guild_id, user_id, command)
+pub async fn cooled_down(user_id: u64, command: &dyn Command) -> Aegis<bool> {
+	get_remaining_cooldown(user_id, command)
 		.await
 		.map(|cooldown| cooldown == 0)
 }
@@ -84,12 +80,12 @@ pub async fn cooled_down(guild_id: u64, user_id: u64, command: &dyn Command) -> 
 ///
 /// This function panics if [`SystemTime::now`] happens to be earlier than
 /// [`UNIX_EPOCH`], which, I don't know how that is possible.
-pub async fn use_last(guild_id: u64, user_id: u64, command: &dyn Command) -> Aegis<()> {
+pub async fn use_last(user_id: u64, command: &dyn Command) -> Aegis<()> {
 	let now = SystemTime::now()
 		.duration_since(UNIX_EPOCH)
 		.unwrap()
 		.as_secs();
-	get_cooldown_manager(guild_id)
+	get_cooldown_manager()
 		.await?
 		.create_last_use(user_id, command.metadata().name, now)
 		.await

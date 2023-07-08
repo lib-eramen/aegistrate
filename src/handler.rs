@@ -99,7 +99,7 @@ impl EventHandler for Handler {
 		});
 		if !DISCORD_READY.load(Ordering::Relaxed) {
 			Self::discord_ready_up(&context, &bot_data).await;
-			Self::initialize_systems(&context, &bot_data)
+			Self::initialize_systems(&context)
 				.await
 				.unwrap_or_else(|why| error!("Initializing system failed: {why}"));
 		}
@@ -144,8 +144,9 @@ impl Handler {
 			.await;
 		READY_TO_GO.store(true, Ordering::Relaxed);
 		info!(
-			"{} has reached the Out-Post!\nUser: {:#?}",
+			"{} has reached the Out-Post at guild ID {}!\nUser: {:#?}",
 			bot_data.user.tag(),
+			get_exec_config().guild_id,
 			get_aegistrate_user()
 		);
 	}
@@ -183,14 +184,15 @@ impl Handler {
 	/// # Errors
 	///
 	/// This function might fail if API calls to Discord fail as well.
-	pub async fn set_up_commands(context: &Context, guild_id: GuildId) -> Aegis<()> {
+	pub async fn set_up_commands(context: &Context) -> Aegis<()> {
+		let guild_id: GuildId = get_exec_config().guild_id.into();
 		guild_id
 			.set_application_commands(context.http(), |commands| {
 				commands.set_application_commands(vec![])
 			})
 			.await?;
 
-		let guild_commands = get_guild_commands(guild_id.into()).await;
+		let guild_commands = get_guild_commands().await;
 		Self::register_commands(
 			context.http(),
 			context.cache().unwrap(),
@@ -201,11 +203,9 @@ impl Handler {
 	}
 
 	/// Initializes all systems for Aegistrate.
-	async fn initialize_systems(context: &Context, bot_data: &Ready) -> Aegis<()> {
-		for guild in &bot_data.guilds {
-			init_all_data(guild.id.into()).await?;
-			Self::set_up_commands(context, guild.id).await?;
-		}
+	async fn initialize_systems(context: &Context) -> Aegis<()> {
+		init_all_data().await?;
+		Self::set_up_commands(context).await?;
 		Ok(())
 	}
 
@@ -267,12 +267,8 @@ impl Handler {
 		app_interaction: &ApplicationCommandInteraction,
 		command: &dyn Command,
 	) -> Aegis<()> {
-		let remaining_cooldown = get_remaining_cooldown(
-			app_interaction.guild_id.unwrap().into(),
-			app_interaction.user.id.into(),
-			command,
-		)
-		.await?;
+		let remaining_cooldown =
+			get_remaining_cooldown(app_interaction.user.id.into(), command).await?;
 		respond_with_embed(
 			http,
 			app_interaction,
@@ -309,12 +305,7 @@ impl Handler {
 				);
 			},
 		}
-		let _ = use_last(
-			app_interaction.guild_id.unwrap().into(),
-			app_interaction.user.id.into(),
-			command.as_ref(),
-		)
-		.await;
+		let _ = use_last(app_interaction.user.id.into(), command.as_ref()).await;
 	}
 
 	/// Runs an application command for Aegistrate.
@@ -335,8 +326,7 @@ impl Handler {
 		};
 
 		let executioner_id = app_interaction.user.id;
-		let guild_id = app_interaction.guild_id.unwrap();
-		if !cooled_down(guild_id.into(), executioner_id.into(), command.as_ref())
+		if !cooled_down(executioner_id.into(), command.as_ref())
 			.await
 			.unwrap()
 		{

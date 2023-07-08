@@ -24,9 +24,6 @@ use crate::{
 #[must_use]
 #[rustfmt::skip]
 pub struct CooldownManager {
-	/// The guild ID that this struct manages.
-	pub guild_id: u64,
-
 	/// Contains all of the guild's last command executions, the key being the command name & the user ID (see [this](self) on the schema for the name!) and the value being the UNIX timestamp of the last command execution.
 	pub executions: HashMap<String, u64>,
 }

@@ -23,14 +23,15 @@ pub mod plugin;
 ///
 /// This function inherits errors from the various functions that interact via
 /// I/O with MongoDB.
-pub async fn init_all_data(guild_id: u64) -> Aegis<()> {
-	CooldownManager::create_default_if_not_found(guild_id).await?;
-	PluginManager::create_default_if_not_found(guild_id).await
+pub async fn init_all_data() -> Aegis<()> {
+	CooldownManager::create_default_if_not_found().await?;
+	PluginManager::create_default_if_not_found().await
 }
 
 /// Implements several functions for a given struct that derives
-/// [`mongod::Mongo`], [Default] and has a `guild_id` property.
-/// Note that this macro also adds two `use`s,
+/// [`mongod::Mongo`] and [Default].
+///
+/// Note that this macro also adds two function-local `use`s,
 /// [`mongod::AsFilter`] and [`mongod::AsUpdate`]. It also requires the user to
 /// provide an expression that will create a [`mongod::Update`] object from the
 /// struct.
@@ -43,31 +44,22 @@ pub async fn init_all_data(guild_id: u64) -> Aegis<()> {
 macro_rules! common_db_impl {
 	($name: ident, $self: ident, $update_code: expr) => {
 		impl $name {
-			/// Constructs a new instance of this struct, using only a guild ID and
-			/// defaulting for the rest of the fields.
-			pub fn from_id(guild_id: u64) -> Self {
-				Self {
-					guild_id,
-					..Self::default()
-				}
-			}
-
 			/// Creates a default instance of this struct and writes it to the database.
 			///
 			/// # Errors
 			///
 			/// This function will return with an error if the guild ID provided matches
 			/// another instance of this struct already in the database.
-			pub async fn create_default(guild_id: u64) -> $crate::Aegis<Self> {
-				if Self::search(guild_id).await.unwrap().is_some() {
+			pub async fn create_default() -> $crate::Aegis<Self> {
+				if Self::search().await.unwrap().is_some() {
 					anyhow::bail!(
-						"An instance of this struct for guild ID {guild_id} already exists!"
+						"An instance of this struct for this guild already exists!"
 					);
 				}
 				$crate::handler::get_mongodb_client()
-					.insert_one::<Self>(Self::from_id(guild_id))
+					.insert_one::<Self>(Self::default())
 					.await?;
-				Ok(Self::from_id(guild_id))
+				Ok(Self::default())
 			}
 
 			/// Gets an entry from the database that matches the given guild ID,
@@ -76,12 +68,10 @@ macro_rules! common_db_impl {
 			/// # Errors
 			///
 			/// This function will propagate I/O errors from querying the database.
-			pub async fn search(guild_id: u64) -> $crate::Aegis<Option<Self>> {
+			pub async fn search() -> $crate::Aegis<Option<Self>> {
 				use mongod::AsFilter;
-				let mut guild_id_filter = Self::filter();
-				guild_id_filter.guild_id = Some(mongod::Comparator::Eq(guild_id));
 				Ok($crate::handler::get_mongodb_client()
-					.find_one::<Self, _>(guild_id_filter)
+					.find_one::<Self, _>(Self::filter())
 					.await?
 					.map(|result| result.1))
 			}
@@ -91,9 +81,9 @@ macro_rules! common_db_impl {
 			/// # Errors
 			///
 			/// This function will propagate errors from [`Self::create_default`].
-			pub async fn create_default_if_not_found(guild_id: u64) -> $crate::Aegis<()> {
+			pub async fn create_default_if_not_found() -> $crate::Aegis<()> {
 				// Self::create_default will have bail!ed if an instance was found.
-				let _ = Self::create_default(guild_id).await;
+				let _ = Self::create_default().await;
 				Ok(())
 			}
 
@@ -104,20 +94,19 @@ macro_rules! common_db_impl {
 			/// # Errors
 			///
 			/// This function will propagate errors from [`Self::search`].
-			pub async fn find_one(guild_id: u64) -> $crate::Aegis<Self> {
-				Self::search(guild_id).await.map(Option::unwrap)
+			pub async fn find_one() -> $crate::Aegis<Self> {
+				Self::search().await.map(Option::unwrap)
 			}
 
-			/// Gets the entry that matches the given guild ID, or creates a default one
-			/// if an entry was not found.
+			/// Gets an existing entry, or creates a default one if an entry was not found.
 			///
 			/// # Errors
 			///
 			/// This function will propagate errors from [`Self::search`] and [`Self::create_default`].
-			pub async fn find_or_create_default(guild_id: u64) -> $crate::Aegis<Self> {
-				let result = Self::search(guild_id).await?;
+			pub async fn find_or_create_default() -> $crate::Aegis<Self> {
+				let result = Self::search().await?;
 				Ok(if result.is_none() {
-					Self::create_default(guild_id).await?
+					Self::create_default().await?
 				} else {
 					result.unwrap()
 				})
@@ -131,12 +120,9 @@ macro_rules! common_db_impl {
 			/// This function will propagate I/O errors from the database client.
 			pub async fn update_entry(&$self) -> $crate::Aegis<()> {
 				use mongod::AsFilter;
-				let mut guild_id_filter = Self::filter();
-				guild_id_filter.guild_id = Some(mongod::Comparator::Eq($self.guild_id));
-
 				$crate::aegis::aegisize_unit(
 					$crate::handler::get_mongodb_client()
-						.update::<Self, _, _>(guild_id_filter, mongod::Updates {
+						.update::<Self, _, _>(Self::filter(), mongod::Updates {
 							set: Some({ $update_code }),
 							unset: None,
 						})

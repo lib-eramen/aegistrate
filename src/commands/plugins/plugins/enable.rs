@@ -116,8 +116,7 @@ impl Command for Enable {
 			.map(|_| ());
 		}
 
-		let guild_id = interaction.guild_id.unwrap();
-		if let Err(why) = enable_plugin(guild_id.into(), plugin, http).await {
+		if let Err(why) = enable_plugin(plugin, http).await {
 			respond_with_embed(http, interaction, ResponseOptions::EditOriginal, |embed| {
 				create_error_embed(
 					embed,

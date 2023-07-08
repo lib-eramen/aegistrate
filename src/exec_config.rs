@@ -127,6 +127,9 @@ pub fn get_exec_config<'a>() -> &'a ExecConfig {
 #[must_use]
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct ExecConfig {
+	/// The guild ID that this bot functions in.
+	pub guild_id: u64,
+
 	/// The bot token used for authentication with the Discord API.
 	pub discord_bot_token: String,
 
@@ -148,6 +151,7 @@ impl ExecConfig {
 	pub fn from_env() -> Aegis<Self> {
 		let _ = dotenv::dotenv();
 		Ok(Self {
+			guild_id: var("GUILD_ID")?.parse()?,
 			discord_bot_token: var("DISCORD_BOT_TOKEN")?,
 			mongodb_uri: var("MONGODB_URI")?,
 			timeout_seconds: var("TIMEOUT_SECONDS")?.parse()?,
