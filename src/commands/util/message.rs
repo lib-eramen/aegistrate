@@ -49,20 +49,15 @@ pub enum ResponseOptions {
 /// that are multiple stages, one might want to have a "status dialog" embed of
 /// sorts.
 #[allow(clippy::missing_errors_doc)]
-pub async fn wait_a_moment<S: ToString>(
+pub async fn wait_a_moment(
 	http: &Http,
 	interaction: &ApplicationCommandInteraction,
 	options: ResponseOptions,
-	custom_message: Option<S>,
 ) -> Aegis<Option<Message>> {
 	respond_with_embed(http, interaction, options, |embed| {
 		create_info_embed(
 			embed,
-			if let Some(message) = &custom_message {
-				message.to_string()
-			} else {
-				"Wait a moment...".to_string()
-			},
+			"Wait a moment...".to_string(),
 			"Hang tight, I'm working on it.".to_string(),
 		)
 	})

@@ -57,7 +57,6 @@ impl Command for Ping {
 			context.http(),
 			interaction,
 			ResponseOptions::CreateOrignial(false),
-			Some("Pong in progress...".to_string()),
 		)
 		.await?;
 

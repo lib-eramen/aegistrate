@@ -15,6 +15,7 @@ use enum_iterator::{
 use serenity::{
 	http::Http,
 	model::prelude::GuildId,
+	prelude::Context,
 };
 use tokio::time::sleep;
 
@@ -24,12 +25,12 @@ use crate::{
 		information::information_commands,
 		plugins::plugin_commands,
 	},
-	core::command::{
-		Command,
-		Commands,
-	},
+	core::command::Commands,
 	data::plugin::PluginManager,
-	handler::REGISTER_COMMAND_INTERVAL,
+	handler::{
+		Handler,
+		REGISTER_COMMAND_INTERVAL,
+	},
 };
 
 /// A plugin that a command semantically belongs to.
@@ -125,19 +126,10 @@ impl Plugin {
 		Self::default_plugins().contains(self)
 	}
 
-	/// Returns the [Option]al command associated with setting up the plugin.
-	#[must_use]
-	#[allow(clippy::match_single_binding)]
-	pub fn get_setup_command(&self) -> Option<Box<dyn Command>> {
-		match self {
-			_ => None,
-		}
-	}
-
 	/// Checks if the plugin requires setup before using its commands.
 	#[must_use]
 	pub fn requires_setup(&self) -> bool {
-		self.get_setup_command().is_some()
+		false
 	}
 
 	/// Returns a list of default commands, by taking them from the [list of
@@ -202,7 +194,7 @@ pub async fn enable_plugin(guild_id: u64, plugin: Plugin, http: &Http) -> Aegis<
 /// This function will return an [Err] if unable to find a plugin manager for
 /// the provided guild ID, or if the provided plugin is not enabled for the
 /// guild.
-pub async fn disable_plugin(guild_id: u64, plugin: Plugin) -> Aegis<()> {
+pub async fn disable_plugin(guild_id: u64, plugin: Plugin, context: &Context) -> Aegis<()> {
 	let mut plugin_manager = get_plugin_manager(guild_id).await?;
 	if !plugin_manager.get_enabled_plugins().contains(&plugin) {
 		bail!(
@@ -210,5 +202,6 @@ pub async fn disable_plugin(guild_id: u64, plugin: Plugin) -> Aegis<()> {
 			plugin.to_name()
 		);
 	}
-	plugin_manager.disable_plugin(plugin).await
+	plugin_manager.disable_plugin(plugin).await?;
+	Handler::set_up_commands(context, GuildId(guild_id)).await
 }

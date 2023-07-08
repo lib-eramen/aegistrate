@@ -32,7 +32,6 @@ use serenity::{
 			Activity,
 			GuildId,
 			Ready,
-			UnavailableGuild,
 		},
 		user::{
 			CurrentUser,
@@ -175,19 +174,27 @@ impl Handler {
 
 	/// Handles command registration for a guild, using the commands from the
 	/// guild's enabled plugins.
-	async fn set_up_commands(context: &Context, guild: &UnavailableGuild) -> Aegis<()> {
-		guild
-			.id
+	///
+	/// # Panics
+	///
+	/// This function will panic if the Discord context does not have a
+	/// functional cache.
+	///
+	/// # Errors
+	///
+	/// This function might fail if API calls to Discord fail as well.
+	pub async fn set_up_commands(context: &Context, guild_id: GuildId) -> Aegis<()> {
+		guild_id
 			.set_application_commands(context.http(), |commands| {
 				commands.set_application_commands(vec![])
 			})
 			.await?;
 
-		let guild_commands = get_guild_commands(guild.id.into()).await;
+		let guild_commands = get_guild_commands(guild_id.into()).await;
 		Self::register_commands(
 			context.http(),
 			context.cache().unwrap(),
-			guild.id,
+			guild_id,
 			guild_commands,
 		)
 		.await
@@ -197,7 +204,7 @@ impl Handler {
 	async fn initialize_systems(context: &Context, bot_data: &Ready) -> Aegis<()> {
 		for guild in &bot_data.guilds {
 			init_all_data(guild.id.into()).await?;
-			Self::set_up_commands(context, guild).await?;
+			Self::set_up_commands(context, guild.id).await?;
 		}
 		Ok(())
 	}
