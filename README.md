@@ -1,5 +1,15 @@
 # Aegistrate - A very obvious portmanteau
 
+<p align="center">
+  <img alt="GitHub Workflow Status (with event)" src="https://img.shields.io/github/actions/workflow/status/developer-ramen/aegistrate/rust.yml?style=flat-square&logo=github">
+  <img alt="GitHub release (with filter)" src="https://img.shields.io/github/v/release/developer-ramen/aegistrate?style=flat-square&logo=github&label=latest">
+  <img alt="GitHub issues" src="https://img.shields.io/github/issues-raw/developer-ramen/aegistrate?style=flat-square&logo=github">
+  <img alt="GitHub pull requests" src="https://img.shields.io/github/issues-pr/developer-ramen/aegistrate?style=flat-square&logo=github">
+  <img alt="Crates.io" src="https://img.shields.io/crates/d/aegistrate?style=flat-square&logo=rust">
+  <img alt="Discord" src="https://img.shields.io/discord/1109493492813668382?style=flat-square&logo=discord&label=discord&color=%237289da&link=https%3A%2F%2Fdiscord.gg%2FbJg7t2FWNn&logoColor=white">
+  <img alt="GitHub" src="https://img.shields.io/github/license/developer-ramen/aegistrate?style=flat-square">
+</p>
+
 Aegistrate is *yet another moderation/general-purpose Discord bot*, but it's open source and has none of that corporate/monetization thing that most other product do. *(subtle shade who?)*
 
 ## How is Aegistrate different?

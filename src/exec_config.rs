@@ -65,7 +65,7 @@ pub fn initialize_exec_config() -> Aegis<()> {
 		error!(
 			"If there exists an execution configuration file for Aegistrate, check to see if it \
 			 has all the keys required for Aegistrate to run. Refer to docs/EXEC-CONFIG.md for \
-			 more info."
+			 more info. More information can also be found at the GitHub repo: https://github.com/developer-ramen/aegistrate"
 		);
 		error!(
 			"Otherwise, create a .env file in the repo directory, or create one in \
