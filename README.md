@@ -1,4 +1,4 @@
-# Aegistrate - A feature-packed, self-hosted solution
+# Aegistrate - A self-hosted general-purpose Discord bot solution
 
 <p align="center">
   <img alt="GitHub Workflow Status (with event)" src="https://img.shields.io/github/actions/workflow/status/developer-ramen/aegistrate/rust.yml?style=flat-square&logo=github">
@@ -10,7 +10,7 @@
   <img alt="GitHub" src="https://img.shields.io/github/license/developer-ramen/aegistrate?style=flat-square">
 </p>
 
-Aegistrate is *yet another moderation/general-purpose Discord bot*, but it's open source and has none of that corporate/monetization thing that most other product do. *(subtle shade who?)*
+Aegistrate is *yet another moderation/general-purpose Discord bot*, but it's self-hosted, open source and has none of that corporate/monetization thing that most other product do. *(subtle shade who?)*
 
 ## How is Aegistrate different?
 
