@@ -12,40 +12,20 @@
 
 Aegistrate is *yet another moderation/general-purpose Discord bot*, but it's self-hosted, open source and has none of that corporate/monetization thing that most other product do. *(subtle shade who?)*
 
-## How is Aegistrate different?
-
-### Community bot and everything's-free motto
-
-In this product, I (@developer-ramen) try my very best to add features at a constant pace, as well as keep everything **free and available** for everyone.
-
-### Open-source and easily self-hostable
-
-I also intend to offer a **self-hosting solution** - one that you can easily and conveniently set up for yourself. Although it definitely takes a little knowledge of setting up your own environment and coding, I **recommend** this over inviting the community bot to your server 10 times out of 10.
-
-In fact, **self-hosting** is the only option anyways, so I guess you'll just have to get used to it.
-
 ## Features
-
-My goal is to make every feature you have in mind come true, **quality-over-quantity fashion**.
 
 Some prominent features we have include:
 - can we update this section anytime soon? yeah, thanks
 
 Some prominent feature **ideas** include:
 - `/punish` - where one can actually set up a punishment hierarchy instead of having to manually use `/ban`, `/kick`, or `/timeout`.
-- `/stats` and more advanced server statistics visualisations.
+- `/stats` and more advanced server statistics visualizations.
 - `/lockdown` and other panic-mode suggestions for when the server gets hits by things like raids or a 10-year-old moderator going bonkers.
 - `/fun-stuff` and an infinitely-expanding list of miscellaneous, fun commands.
 
-## Setup instructions
+## Get started
 
-### For the tech-oriented folks
-
-You know what to do. Docs are in the `docs/` folder.
-
-### For the less experienced
-
-can we get this filled out sometime in the future? yeah, thanks
+You can find (or eventually you will find) tutorials and huides on how to set up and host Aegistate for yourself inside the docs folder and the Wiki.
 
 <hr>
 
@@ -60,3 +40,5 @@ I think it is sometimes funny and hilarious to clown on cash-grabby thingmiums t
 I don't expect any compensation for me, or for this project - if I needed to make money I'll just hit up one of those people who DM'ed me about a drop-shipping position they opened up 3 months ago, which is way simpler than making a Discord bot.
 
 I'm writing an essay here, but you get the point. It's my job to make good of Aegistrate, not to make fun of MEE6 or any other bot that makes money. I appreciate you for reading through my messy writing, and I hope you share my sentiments about this as well.
+
+[rustup]: https://rustup.rs/
