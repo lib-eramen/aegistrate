@@ -1,4 +1,4 @@
-# Aegistrate - A very obvious portmanteau
+# Aegistrate - A feature-packed, self-hosted solution
 
 <p align="center">
   <img alt="GitHub Workflow Status (with event)" src="https://img.shields.io/github/actions/workflow/status/developer-ramen/aegistrate/rust.yml?style=flat-square&logo=github">
@@ -53,9 +53,9 @@ can we get this filled out sometime in the future? yeah, thanks
 
 I have nothing against MEE6 (or at least don't want to do any harm or spread any bad), or any other businesses with products here on Discord, nor do I expect anyone working on this project to be so.
 
-This project's branding and appearance screams anti-MEE6, but I do not have or want to have any ill-intents against the product and their company. After all, a Discord bot is something that was made by people, who then needed to be compensated. In the same vein, Sidescroll Ventures found that their Discord bot was a good way to make money, so they did use MEE6 as a way to make money.
+This project's branding and appearance scream anti-MEE6, but I do not have or want to have any ill-intents against the product and the company. After all, a Discord bot is something that was made by people, who then needed to be compensated. In the same vein, Sidescroll Ventures found that their Discord bot was a good way to make money, so they did use MEE6 as a way to make money.
 
-I think it is sometimes funny and hilarious to clown on cash-grabby thingmiums that people make, but as long as it does not harm anyone or does any illegal things, it is none of my business to try to strike it down or do anything to the people involved in it.
+I think it is sometimes funny and hilarious to clown on cash-grabby thingmiums that people make, but as long as it does not harm anyone or do any illegal things, it is none of my business to try to strike it down or do anything to the people involved in it.
 
 I don't expect any compensation for me, or for this project - if I needed to make money I'll just hit up one of those people who DM'ed me about a drop-shipping position they opened up 3 months ago, which is way simpler than making a Discord bot.
 
