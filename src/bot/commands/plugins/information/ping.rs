@@ -15,20 +15,22 @@ use crate::{
 		aegisize,
 		Aegis,
 	},
-	commands::{
-		components::embed::create_success_embed,
-		util::message::{
-			respond_with_embed,
-			wait_a_moment,
-			ResponseOptions,
+	bot::{
+		commands::{
+			components::embed::create_success_embed,
+			util::message::{
+				respond_with_embed,
+				wait_a_moment,
+				ResponseOptions,
+			},
 		},
-	},
-	core::{
-		command::{
-			Command,
-			Metadata,
+		core::{
+			command::{
+				Command,
+				Metadata,
+			},
+			plugin::Plugin,
 		},
-		plugin::Plugin,
 	},
 };
 

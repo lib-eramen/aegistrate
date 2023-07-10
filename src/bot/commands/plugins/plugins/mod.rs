@@ -1,6 +1,6 @@
 //! Contains commands that manipulates plugin settings of a guild.
 
-use crate::{
+use crate::bot::{
 	commands::plugins::plugins::{
 		disable::Disable,
 		enable::Enable,

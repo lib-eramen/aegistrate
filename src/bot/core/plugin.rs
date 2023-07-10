@@ -20,16 +20,18 @@ use tokio::time::sleep;
 
 use crate::{
 	aegis::Aegis,
-	commands::plugins::{
-		information::information_commands,
-		plugins::plugin_commands,
+	bot::{
+		commands::plugins::{
+			information::information_commands,
+			plugins::plugin_commands,
+		},
+		core::command::{
+			set_up_commands,
+			Commands,
+			REGISTER_COMMAND_INTERVAL,
+		},
+		data::plugin::PluginData,
 	},
-	core::command::{
-		set_up_commands,
-		Commands,
-		REGISTER_COMMAND_INTERVAL,
-	},
-	data::plugin::PluginData,
 	exec_config::get_working_guild,
 };
 

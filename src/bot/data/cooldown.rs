@@ -16,8 +16,8 @@ use crate::{
 		aegisize,
 		Aegis,
 	},
+	bot::handler::get_mongodb_client,
 	common_db_impl,
-	handler::get_mongodb_client,
 };
 
 /// A struct that contains cooldown data for guilds.

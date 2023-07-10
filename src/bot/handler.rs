@@ -44,26 +44,28 @@ use tokio::sync::OnceCell;
 
 use crate::{
 	aegis::Aegis,
-	commands::{
-		components::embed::create_error_embed,
-		util::message::{
-			respond_with_embed,
-			ResponseOptions,
+	bot::{
+		commands::{
+			components::embed::create_error_embed,
+			util::message::{
+				respond_with_embed,
+				ResponseOptions,
+			},
 		},
+		core::{
+			command::{
+				command_by_name,
+				set_up_commands,
+				Command,
+			},
+			cooldown::{
+				cooled_down,
+				get_remaining_cooldown,
+				use_last,
+			},
+		},
+		data::init_all_data,
 	},
-	core::{
-		command::{
-			command_by_name,
-			set_up_commands,
-			Command,
-		},
-		cooldown::{
-			cooled_down,
-			get_remaining_cooldown,
-			use_last,
-		},
-	},
-	data::init_all_data,
 	exec_config::{
 		get_exec_config,
 		get_working_guild,

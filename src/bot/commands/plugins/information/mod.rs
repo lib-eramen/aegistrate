@@ -2,7 +2,7 @@
 //! This can be anything - the Aegistrate bot's data/statistics, member data,
 //! etc.
 
-use crate::{
+use crate::bot::{
 	commands::plugins::information::ping::Ping,
 	core::command::Commands,
 };

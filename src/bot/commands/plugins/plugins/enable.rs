@@ -1,5 +1,5 @@
-//! Disables a plugin for a guild (if not already disabled.) See also
-//! [`DisablePlugin`].
+//! Enables a plugin for a guild (if not already enabled.) See also
+//! [`EnablePlugin`].
 
 use async_trait::async_trait;
 use serenity::{
@@ -14,45 +14,48 @@ use serenity::{
 
 use crate::{
 	aegis::Aegis,
-	commands::{
-		components::embed::{
-			create_error_embed,
-			create_success_embed,
-		},
-		util::{
-			message::{
-				respond_with_embed,
-				wait_a_moment,
-				ResponseOptions,
+	bot::{
+		commands::{
+			components::embed::{
+				create_error_embed,
+				create_info_embed,
+				create_success_embed,
 			},
-			options::{
-				get_required_option,
-				get_string,
+			util::{
+				message::{
+					respond_with_embed,
+					wait_a_moment,
+					ResponseOptions,
+				},
+				options::{
+					get_required_option,
+					get_string,
+				},
 			},
 		},
-	},
-	core::{
-		command::{
-			Command,
-			Metadata,
-		},
-		plugin::{
-			disable_plugin,
-			Plugin,
+		core::{
+			command::{
+				Command,
+				Metadata,
+			},
+			plugin::{
+				enable_plugin,
+				Plugin,
+			},
 		},
 	},
 };
 
-/// The unit struct containing the implementation for the `/disable`
+/// The unit struct containing the implementation for the `/enable`
 /// command.
-pub struct Disable;
+pub struct Enable;
 
 #[async_trait]
-impl Command for Disable {
+impl Command for Enable {
 	fn metadata(&self) -> Metadata<'_> {
 		Metadata::builder()
-			.name("disable")
-			.description("Disables a plugin for the current guild.")
+			.name("enable")
+			.description("Enables a plugin for the current guild.")
 			.plugin(Plugin::Plugins)
 			.cooldown_secs(10)
 			.aliases(None)
@@ -73,7 +76,7 @@ impl Command for Disable {
 			}
 			plugin
 				.name("plugin")
-				.description("The plugin to disable for the current guild.")
+				.description("The plugin to enable for the current guild.")
 				.kind(CommandOptionType::String)
 				.required(true)
 		})
@@ -98,37 +101,53 @@ impl Command for Disable {
 		)))
 		.unwrap();
 
-		if let Err(why) = disable_plugin(plugin, context).await {
+		if plugin.requires_setup() {
+			return respond_with_embed(
+				http,
+				interaction,
+				ResponseOptions::CreateOrignial(false),
+				|embed| {
+					create_info_embed(
+						embed,
+						"Dashboard setup required",
+						"This plugin requires further setup with the dashboard UI.",
+					)
+				},
+			)
+			.await
+			.map(|_| ());
+		}
+
+		if let Err(why) = enable_plugin(plugin, http).await {
 			respond_with_embed(http, interaction, ResponseOptions::EditOriginal, |embed| {
 				create_error_embed(
 					embed,
 					format!("An error happened: `{why}`"),
 					format!(
-						"The plugin `{}` might have been already disabled, or a networking error \
-						 has happened.",
+						"The plugin `{}` might have been already enabled, setup steps weren't \
+						 completed, or a networking error has happened.",
 						plugin.to_name()
 					),
 					None,
 				)
 			})
 			.await
-			.map(|_| ())
 		} else {
 			respond_with_embed(http, interaction, ResponseOptions::EditOriginal, |embed| {
 				create_success_embed(
 					embed,
-					format!("Plugin {} disabled!", plugin.to_name()),
+					format!("Plugin {} enabled!", plugin.to_name()),
 					format!(
-						"Successfully disabled plugin {}! Commands that were removed from your \
+						"Successfully enabled plugin {}! Commands that were enabled for your \
 						 guild were: {}",
 						plugin.to_name(),
 						enabled_commands_string(plugin)
 					),
 				)
 			})
-			.await?;
-			Ok(())
+			.await
 		}
+		.map(|_| ())
 	}
 }
 

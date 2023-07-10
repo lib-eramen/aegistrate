@@ -12,8 +12,10 @@ use std::time::{
 
 use crate::{
 	aegis::Aegis,
-	core::command::Command,
-	data::cooldown::CooldownData,
+	bot::{
+		core::command::Command,
+		data::cooldown::CooldownData,
+	},
 };
 
 /// Gets the remaining seconds to wait for a cooldown to finish.

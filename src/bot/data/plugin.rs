@@ -15,12 +15,14 @@ use mongod::{
 
 use crate::{
 	aegis::Aegis,
-	common_db_impl,
-	core::{
-		command::Commands,
-		plugin::Plugin,
+	bot::{
+		core::{
+			command::Commands,
+			plugin::Plugin,
+		},
+		handler::get_mongodb_client,
 	},
-	handler::get_mongodb_client,
+	common_db_impl,
 };
 
 /// An entry for an enabled plugin, stored by their name.

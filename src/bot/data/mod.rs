@@ -7,7 +7,7 @@
 
 use crate::{
 	aegis::Aegis,
-	data::plugin::PluginData,
+	bot::data::plugin::PluginData,
 };
 
 pub mod cooldown;
@@ -58,7 +58,7 @@ macro_rules! common_db_impl {
 			/// This function will propagate I/O errors from querying the database.
 			pub async fn search_one() -> $crate::Aegis<Option<Self>> {
 				use mongod::AsFilter;
-				Ok($crate::handler::get_mongodb_client()
+				Ok($crate::bot::handler::get_mongodb_client()
 					.find_one::<Self, _>(Self::filter())
 					.await?
 					.map(|result| result.1))
@@ -71,7 +71,7 @@ macro_rules! common_db_impl {
 			/// This function will propagate I/O errors from querying the database.
 			pub async fn filter_one_by_self(&$self) -> $crate::Aegis<Option<Self>> {
 				use mongod::AsFilter;
-				Ok($crate::handler::get_mongodb_client()
+				Ok($crate::bot::handler::get_mongodb_client()
 					.find_one::<Self, _>({ $filter_code })
 					.await?
 					.map(|data| data.1))
@@ -84,7 +84,7 @@ macro_rules! common_db_impl {
 			/// This function will return errors from database I/O.
 			pub async fn find_all() -> $crate::Aegis<Vec<Self>> {
 				use futures::StreamExt;
-				let mut query_stream = $crate::handler::get_mongodb_client()
+				let mut query_stream = $crate::bot::handler::get_mongodb_client()
 					.find::<Self, _>(None).await?
 					.map(|item| item.unwrap().1);
 				let mut results = vec![];
@@ -103,7 +103,7 @@ macro_rules! common_db_impl {
 			pub async fn update_entry(&$self) -> $crate::Aegis<()> {
 				use mongod::AsFilter;
 				$crate::aegis::aegisize_unit(
-					$crate::handler::get_mongodb_client()
+					$crate::bot::handler::get_mongodb_client()
 						.update_one::<Self, _, _>(Self::filter(), mongod::Updates {
 							set: Some({ $update_code }),
 							unset: None,

@@ -21,7 +21,7 @@ use crate::{
 		aegisize,
 		Aegis,
 	},
-	commands::components::embed::create_info_embed,
+	bot::commands::components::embed::create_info_embed,
 };
 
 /// Controlling Discord message response options.

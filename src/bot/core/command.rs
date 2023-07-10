@@ -23,7 +23,7 @@ use tokio::time::sleep;
 
 use crate::{
 	aegis::Aegis,
-	core::plugin::{
+	bot::core::plugin::{
 		get_guild_commands,
 		Plugin,
 	},

@@ -19,7 +19,7 @@ use aegis::{
 	aegisize_unit,
 	Aegis,
 };
-use handler::{
+use bot::handler::{
 	spawn_timeout_checker,
 	Handler,
 };
@@ -34,11 +34,9 @@ use crate::exec_config::{
 };
 
 pub mod aegis;
-pub mod commands;
-pub mod core;
-pub mod data;
+pub mod bot;
+pub mod dashboard;
 pub mod exec_config;
-pub mod handler;
 
 /// Execution entry point of Aegistrate.
 #[tokio::main]
