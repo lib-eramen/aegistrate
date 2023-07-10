@@ -16,9 +16,7 @@ use log::{
 	error,
 	info,
 };
-use pluralizer::pluralize;
 use serenity::{
-	client::Cache,
 	http::{
 		CacheHttp,
 		Http,
@@ -30,7 +28,6 @@ use serenity::{
 				Interaction,
 			},
 			Activity,
-			GuildId,
 			Ready,
 		},
 		user::{
@@ -43,10 +40,7 @@ use serenity::{
 		EventHandler,
 	},
 };
-use tokio::{
-	sync::OnceCell,
-	time::sleep,
-};
+use tokio::sync::OnceCell;
 
 use crate::{
 	aegis::Aegis,
@@ -60,6 +54,7 @@ use crate::{
 	core::{
 		command::{
 			command_by_name,
+			set_up_commands,
 			Command,
 		},
 		cooldown::{
@@ -67,10 +62,12 @@ use crate::{
 			get_remaining_cooldown,
 			use_last,
 		},
-		plugin::get_guild_commands,
 	},
 	data::init_all_data,
-	exec_config::get_exec_config,
+	exec_config::{
+		get_exec_config,
+		get_working_guild,
+	},
 };
 
 /// Spawns a timeout checker that exits the program if [`DISCORD_READY`] is not
@@ -146,66 +143,15 @@ impl Handler {
 		info!(
 			"{} has reached the Out-Post at guild ID {}!\nUser: {:#?}",
 			bot_data.user.tag(),
-			get_exec_config().guild_id,
+			get_working_guild(),
 			get_aegistrate_user()
 		);
-	}
-
-	/// Registers multiple commands to a guild.
-	#[allow(clippy::cast_possible_wrap)]
-	async fn register_commands(
-		http: &Http,
-		cache: &Cache,
-		guild: GuildId,
-		commands: Vec<Box<dyn Command>>,
-	) -> Aegis<()> {
-		let commands_count = commands.len();
-		for command in commands {
-			command.register_to_guild(http, cache, guild).await?;
-			sleep(Duration::from_secs_f32(REGISTER_COMMAND_INTERVAL)).await;
-		}
-		info!(
-			"Guild \"{}\" ({}) registered {}",
-			guild.name(cache).unwrap_or_else(|| "<null>".to_string()),
-			guild.0,
-			pluralize("command", commands_count as isize, true),
-		);
-		Ok(())
-	}
-
-	/// Handles command registration for a guild, using the commands from the
-	/// guild's enabled plugins.
-	///
-	/// # Panics
-	///
-	/// This function will panic if the Discord context does not have a
-	/// functional cache.
-	///
-	/// # Errors
-	///
-	/// This function might fail if API calls to Discord fail as well.
-	pub async fn set_up_commands(context: &Context) -> Aegis<()> {
-		let guild_id: GuildId = get_exec_config().guild_id.into();
-		guild_id
-			.set_application_commands(context.http(), |commands| {
-				commands.set_application_commands(vec![])
-			})
-			.await?;
-
-		let guild_commands = get_guild_commands().await?;
-		Self::register_commands(
-			context.http(),
-			context.cache().unwrap(),
-			guild_id,
-			guild_commands,
-		)
-		.await
 	}
 
 	/// Initializes all systems for Aegistrate.
 	async fn initialize_systems(context: &Context) -> Aegis<()> {
 		init_all_data().await?;
-		Self::set_up_commands(context).await?;
+		set_up_commands(context).await?;
 		Ok(())
 	}
 
@@ -370,9 +316,6 @@ pub fn get_aegistrate_user<'a>() -> &'a CurrentUser {
 
 /// Controls whether Aegistrate is up and running.
 pub static READY_TO_GO: AtomicBool = AtomicBool::new(false);
-
-/// The interval to sleep for between each command registration.
-pub static REGISTER_COMMAND_INTERVAL: f32 = 1.0;
 
 /// Controls whether the Discord service portion is ready to go.
 /// Take a look at [`spawn_timeout_checker`] to see how this variable is used.

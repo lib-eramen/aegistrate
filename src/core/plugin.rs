@@ -14,7 +14,6 @@ use enum_iterator::{
 };
 use serenity::{
 	http::Http,
-	model::prelude::GuildId,
 	prelude::Context,
 };
 use tokio::time::sleep;
@@ -25,13 +24,13 @@ use crate::{
 		information::information_commands,
 		plugins::plugin_commands,
 	},
-	core::command::Commands,
-	data::plugin::PluginData,
-	exec_config::get_exec_config,
-	handler::{
-		Handler,
+	core::command::{
+		set_up_commands,
+		Commands,
 		REGISTER_COMMAND_INTERVAL,
 	},
+	data::plugin::PluginData,
+	exec_config::get_working_guild,
 };
 
 /// A plugin that a command semantically belongs to.
@@ -165,7 +164,7 @@ pub async fn enable_plugin(plugin: Plugin, http: &Http) -> Aegis<()> {
 		);
 	}
 	for command in plugin.get_commands() {
-		GuildId(get_exec_config().guild_id)
+		get_working_guild()
 			.create_application_command(http, |endpoint| command.register(endpoint))
 			.await?;
 		sleep(Duration::from_secs_f32(REGISTER_COMMAND_INTERVAL)).await;
@@ -188,5 +187,5 @@ pub async fn disable_plugin(plugin: Plugin, context: &Context) -> Aegis<()> {
 		);
 	}
 	PluginData::disable_plugin(plugin).await?;
-	Handler::set_up_commands(context).await
+	set_up_commands(context).await
 }

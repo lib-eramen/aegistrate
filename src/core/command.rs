@@ -3,23 +3,31 @@
 //! systems. To implement a command, get started with looking at the [Command]
 //! trait.
 
+use std::time::Duration;
+
 use async_trait::async_trait;
 use derive_builder::Builder;
 use log::info;
+use pluralizer::pluralize;
 use serenity::{
 	builder::CreateApplicationCommand,
 	client::Cache,
-	http::Http,
-	model::prelude::{
-		interaction::application_command::ApplicationCommandInteraction,
-		GuildId,
+	http::{
+		CacheHttp,
+		Http,
 	},
+	model::prelude::interaction::application_command::ApplicationCommandInteraction,
 	prelude::Context,
 };
+use tokio::time::sleep;
 
 use crate::{
 	aegis::Aegis,
-	core::plugin::Plugin,
+	core::plugin::{
+		get_guild_commands,
+		Plugin,
+	},
+	exec_config::get_working_guild,
 };
 
 /// Alias for a [Vec] of [Box]ed [Command]s.
@@ -113,12 +121,8 @@ pub trait Command: Send + Sync {
 	) -> Aegis<()>;
 
 	/// Registers all of this command's names and aliases.
-	async fn register_to_guild<'a>(
-		&self,
-		http: &'a Http,
-		cache: &'a Cache,
-		guild: GuildId,
-	) -> Aegis<()> {
+	async fn register_to_guild<'a>(&self, http: &'a Http, cache: &'a Cache) -> Aegis<()> {
+		let guild = get_working_guild();
 		for name in self.metadata().get_all_names() {
 			guild
 				.create_application_command(http, |endpoint| {
@@ -153,3 +157,51 @@ pub fn command_by_name(name: &str) -> Option<Box<dyn Command>> {
 		.into_iter()
 		.find(|command| command.metadata().get_all_names().contains(&name))
 }
+
+/// Registers multiple commands to a guild.
+#[allow(clippy::cast_possible_wrap)]
+async fn register_commands(
+	http: &Http,
+	cache: &Cache,
+	commands: Vec<Box<dyn Command>>,
+) -> Aegis<()> {
+	let guild = get_working_guild();
+	let commands_count = commands.len();
+	for command in commands {
+		command.register_to_guild(http, cache).await?;
+		sleep(Duration::from_secs_f32(REGISTER_COMMAND_INTERVAL)).await;
+	}
+	info!(
+		"Guild \"{}\" ({}) registered {}",
+		guild.name(cache).unwrap_or_else(|| "<null>".to_string()),
+		guild.0,
+		pluralize("command", commands_count as isize, true),
+	);
+	Ok(())
+}
+
+/// Handles command registration for a guild, using the commands from the
+/// guild's enabled plugins.
+///
+/// # Panics
+///
+/// This function will panic if the Discord context does not have a
+/// functional cache.
+///
+/// # Errors
+///
+/// This function might fail if API calls to Discord fail as well.
+pub async fn set_up_commands(context: &Context) -> Aegis<()> {
+	let guild_id = get_working_guild();
+	guild_id
+		.set_application_commands(context.http(), |commands| {
+			commands.set_application_commands(vec![])
+		})
+		.await?;
+
+	let guild_commands = get_guild_commands().await?;
+	register_commands(context.http(), context.cache().unwrap(), guild_commands).await
+}
+
+/// The interval to sleep for between each command registration.
+pub static REGISTER_COMMAND_INTERVAL: f32 = 1.0;

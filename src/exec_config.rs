@@ -21,6 +21,7 @@ use serde::{
 	Deserialize,
 	Serialize,
 };
+use serenity::model::prelude::GuildId;
 use tokio::sync::OnceCell;
 
 use crate::aegis::{
@@ -171,6 +172,12 @@ impl ExecConfig {
 			env_config.ok()
 		}
 	}
+}
+
+/// Gets the ID of the guild that this bot is working on.
+#[must_use]
+pub fn get_working_guild() -> GuildId {
+	GuildId(get_exec_config().guild_id)
 }
 
 /// Gets the execution config file for Aegistrate, and parses it.
