@@ -14,7 +14,7 @@ Aegistrate is *yet another moderation/general-purpose Discord bot*, but it's ope
 
 ## How is Aegistrate different?
 
-### Commmunity bot and everything's-free motto
+### Community bot and everything's-free motto
 
 In this product, I (@developer-ramen) try my very best to add features at a constant pace, as well as keep everything **free and available** for everyone.
 
