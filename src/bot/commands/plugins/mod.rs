@@ -4,4 +4,5 @@
 #![allow(clippy::module_inception)]
 
 pub mod information;
+pub mod moderation;
 pub mod plugins;

@@ -27,7 +27,7 @@ use crate::{
 		get_guild_commands,
 		Plugin,
 	},
-	exec_config::get_working_guild,
+	exec_config::get_working_guild_id,
 };
 
 /// Alias for a [Vec] of [Box]ed [Command]s.
@@ -122,7 +122,7 @@ pub trait Command: Send + Sync {
 
 	/// Registers all of this command's names and aliases.
 	async fn register_to_guild<'a>(&self, http: &'a Http, cache: &'a Cache) -> Aegis<()> {
-		let guild = get_working_guild();
+		let guild = get_working_guild_id();
 		for name in self.metadata().get_all_names() {
 			guild
 				.create_application_command(http, |endpoint| {
@@ -165,7 +165,7 @@ async fn register_commands(
 	cache: &Cache,
 	commands: Vec<Box<dyn Command>>,
 ) -> Aegis<()> {
-	let guild = get_working_guild();
+	let guild = get_working_guild_id();
 	let commands_count = commands.len();
 	for command in commands {
 		command.register_to_guild(http, cache).await?;
@@ -192,7 +192,7 @@ async fn register_commands(
 ///
 /// This function might fail if API calls to Discord fail as well.
 pub async fn set_up_commands(context: &Context) -> Aegis<()> {
-	let guild_id = get_working_guild();
+	let guild_id = get_working_guild_id();
 	guild_id
 		.set_application_commands(context.http(), |commands| {
 			commands.set_application_commands(vec![])

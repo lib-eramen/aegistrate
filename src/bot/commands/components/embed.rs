@@ -83,24 +83,12 @@ pub fn create_error_embed<E: ToString, C: ToString>(
 	embed: &mut CreateEmbed,
 	error: E,
 	cause: C,
-	hint: Option<E>,
 ) -> &mut CreateEmbed {
-	let e = embed_template(
+	embed_template(
 		embed,
 		"Error!".to_string(),
 		error.to_string(),
 		EmbedKind::Error,
 	)
-	.field("Cause", cause, false);
-
-	if let Some(hint) = hint {
-		e.field("Hint", hint, false)
-	} else {
-		e
-	}
-	.footer(|footer| {
-		footer.text(
-			"Report issues here in our GitHub repo! (https://github.com/out-post/aegistrate/issues) ",
-		)
-	})
+	.field("Cause", cause, false)
 }

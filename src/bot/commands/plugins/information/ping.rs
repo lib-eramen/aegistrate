@@ -59,6 +59,7 @@ impl Command for Ping {
 			context.http(),
 			interaction,
 			ResponseOptions::CreateOrignial(false),
+			Some("Pinging...".to_string()),
 		)
 		.await?;
 

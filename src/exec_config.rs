@@ -176,7 +176,7 @@ impl ExecConfig {
 
 /// Gets the ID of the guild that this bot is working on.
 #[must_use]
-pub fn get_working_guild() -> GuildId {
+pub fn get_working_guild_id() -> GuildId {
 	GuildId(get_exec_config().guild_id)
 }
 

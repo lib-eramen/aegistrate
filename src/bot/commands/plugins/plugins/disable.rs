@@ -91,6 +91,7 @@ impl Command for Disable {
 			context.http(),
 			interaction,
 			ResponseOptions::CreateOrignial(false),
+			Some("Disabling...".to_string()),
 		)
 		.await?;
 
@@ -110,7 +111,6 @@ impl Command for Disable {
 						 has happened.",
 						plugin.to_name()
 					),
-					None,
 				)
 			})
 			.await

@@ -53,11 +53,13 @@ pub async fn wait_a_moment(
 	http: &Http,
 	interaction: &ApplicationCommandInteraction,
 	options: ResponseOptions,
+	custom_message: Option<String>,
 ) -> Aegis<Option<Message>> {
+	let msg = custom_message.unwrap_or_else(|| "Working on it...".to_string());
 	respond_with_embed(http, interaction, options, |embed| {
 		create_info_embed(
 			embed,
-			"Wait a moment...".to_string(),
+			msg.clone(),
 			"Hang tight, I'm working on it.".to_string(),
 		)
 	})

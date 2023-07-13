@@ -68,7 +68,7 @@ use crate::{
 	},
 	exec_config::{
 		get_exec_config,
-		get_working_guild,
+		get_working_guild_id,
 	},
 };
 
@@ -145,7 +145,7 @@ impl Handler {
 		info!(
 			"{} has reached the Out-Post at guild ID {}!\nUser: {:#?}",
 			bot_data.user.tag(),
-			get_working_guild(),
+			get_working_guild_id(),
 			get_aegistrate_user()
 		);
 	}
@@ -172,10 +172,6 @@ impl Handler {
 					"Rude! I'm not even done getting ready!",
 					"Aegistrate hasn't finished all of its ready-up procedures. Coffee takes time \
 					 to brew, you know?",
-					Some(
-						"Give Aegistrate a bit of time - you should see its status turn from Do \
-						 Not Disturb to Online soon!",
-					),
 				)
 			},
 		)
@@ -201,7 +197,6 @@ impl Handler {
 						 \"/{command_name}\" is."
 					),
 					format!("Failed to get a command with the name \"/{command_name}\"."),
-					None,
 				)
 			},
 		)
@@ -226,7 +221,6 @@ impl Handler {
 					embed,
 					"Cool down! You need to wait a bit more before using this command.",
 					format!("Cooldown has not been reached: {remaining_cooldown}s left."),
-					Some("Just pipe down and wait!"),
 				)
 			},
 		)

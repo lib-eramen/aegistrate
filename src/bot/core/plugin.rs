@@ -23,6 +23,7 @@ use crate::{
 	bot::{
 		commands::plugins::{
 			information::information_commands,
+			moderation::moderation_commands,
 			plugins::plugin_commands,
 		},
 		core::command::{
@@ -32,7 +33,7 @@ use crate::{
 		},
 		data::plugin::PluginData,
 	},
-	exec_config::get_working_guild,
+	exec_config::get_working_guild_id,
 };
 
 /// A plugin that a command semantically belongs to.
@@ -96,7 +97,7 @@ impl Plugin {
 	pub fn get_commands(self) -> Commands {
 		match self {
 			Self::Information => information_commands(),
-			Self::Moderation => vec![],
+			Self::Moderation => moderation_commands(),
 			Self::Plugins => plugin_commands(),
 		}
 	}
@@ -166,7 +167,7 @@ pub async fn enable_plugin(plugin: Plugin, http: &Http) -> Aegis<()> {
 		);
 	}
 	for command in plugin.get_commands() {
-		get_working_guild()
+		get_working_guild_id()
 			.create_application_command(http, |endpoint| command.register(endpoint))
 			.await?;
 		sleep(Duration::from_secs_f32(REGISTER_COMMAND_INTERVAL)).await;

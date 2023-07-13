@@ -4,4 +4,5 @@
 
 pub mod command;
 pub mod cooldown;
+pub mod moderation;
 pub mod plugin;

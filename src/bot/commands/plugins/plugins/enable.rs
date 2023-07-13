@@ -89,9 +89,10 @@ impl Command for Enable {
 	) -> Aegis<()> {
 		let http = context.http();
 		wait_a_moment(
-			context.http(),
+			http,
 			interaction,
 			ResponseOptions::CreateOrignial(false),
+			Some("Enabling...".to_string()),
 		)
 		.await?;
 
@@ -124,11 +125,10 @@ impl Command for Enable {
 					embed,
 					format!("An error happened: `{why}`"),
 					format!(
-						"The plugin `{}` might have been already enabled, setup steps weren't \
-						 completed, or a networking error has happened.",
+						"The plugin `{}` might have been already enabled, or a networking error \
+						 has happened.",
 						plugin.to_name()
 					),
-					None,
 				)
 			})
 			.await
