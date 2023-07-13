@@ -9,7 +9,7 @@
 //!
 //! No in-app purchases (hopefully)!
 
-#![deny(unused_must_use, unused_imports, rust_2018_idioms)]
+#![deny(unused_must_use, unused_imports, rust_2018_idioms, warnings)]
 #![warn(clippy::all, clippy::pedantic, missing_docs)]
 #![allow(dead_code, clippy::module_name_repetitions)]
 

@@ -132,7 +132,7 @@ async fn send_notification_results(
 			if let Err(ref why) = dm_result {
 				create_warning_embed(
 					embed,
-					format!("Notification failed!"),
+					"Notification failed!",
 					format!("The bot failed to send {username} a DM. Please notify them manually."),
 				)
 				.field("Failure reason", why, false)

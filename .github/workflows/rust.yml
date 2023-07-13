@@ -2,31 +2,48 @@ name: Rust
 
 on:
   push:
-    branches: [ "main" ]
+    branches: "*"
   pull_request:
-    branches: [ "main" ]
+    branches: "*"
 
 env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  build:
+  rust-ci:
+    name: Complete Rust CI
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-    - name: Build with Cargo
-      run: cargo build --verbose
-  
-  test:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v3
-    - name: Test with Cargo
-      run: cargo test --verbose
-  
-  clippy:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v3
-    - name: Lint with Clippy
-      run: cargo clippy --no-deps -- -D clippy::all
+      - name: Checkout sources
+        uses: actions/checkout@v3
+
+      - name: Install nightly toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: default
+          toolchain: nightly
+          override: true
+      
+      - name: Build with cargo
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --all --all-targets
+
+      - name: Lint code with clippy
+        uses: actions-rs/cargo@v1
+        with:
+          command: clippy
+          args: --no-deps --keep-going --all-targets --all-features -Z unstable-options
+      
+      - name: Test code with cargo
+        uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: --all --all-targets
+
+      - name: Check formatting with fmt
+        uses: actions-rs/cargo@v1
+        with:
+          command: fmt
+          args: --all -- --check
