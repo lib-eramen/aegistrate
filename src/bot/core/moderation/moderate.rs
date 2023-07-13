@@ -40,6 +40,7 @@ use crate::{
 		core::moderation::{
 			ban::ban,
 			capitalize_first,
+			kick::kick,
 			ModerationAction,
 			ModerationEligibility,
 			ModerationParameters,
@@ -241,6 +242,7 @@ pub async fn moderate(
 				eligibility.create_ineligibility_embed(
 					interaction.user.mention(),
 					params.user.mention(),
+					action,
 					embed,
 				)
 			})
@@ -258,10 +260,9 @@ pub async fn moderate(
 	.await?;
 
 	let action_result = match action {
-		ModerationAction::Ban => ban(params, context, interaction),
-		ModerationAction::Kick => todo!(),
+		ModerationAction::Ban => ban(params, context, interaction).await,
+		ModerationAction::Kick => kick(params, context, interaction).await,
 		ModerationAction::Timeout => todo!(),
-	}
-	.await;
+	};
 	send_action_results(action_result, action, params, http, interaction).await
 }

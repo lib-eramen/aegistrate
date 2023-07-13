@@ -42,6 +42,7 @@ use crate::{
 };
 
 pub mod ban;
+pub mod kick;
 pub mod moderate;
 
 fn capitalize_first(s: &str) -> String {
@@ -158,43 +159,56 @@ impl ModerationEligibility {
 		self,
 		moderator_mention: Mention,
 		member_mention: Mention,
+		action: ModerationAction,
 		embed: &mut CreateEmbed,
 	) -> &mut CreateEmbed {
+		let (verb_present, verb_past) = (
+			action.get_moderation_verb(),
+			action.get_moderation_verb_past(),
+		);
 		let error = match self {
 			Self::Eligible => panic!("This case should not happen!"),
 			Self::BotUser => {
 				format!(
-					"{member_mention} is a bot user, and cannot be moderated. Please manage the \
+					"{member_mention} is a bot user, and cannot be {verb_past}. Please manage the \
 					 integration attached to {member_mention} instead.",
 				)
 			},
 			Self::ServerOwner => {
-				format!("{member_mention} is a server owner, and cannot be moderated.")
+				format!("{member_mention} is a server owner, and cannot be {verb_past}.")
 			},
 			Self::AreThemselves => {
-				format!("You cannot moderate yourself, {moderator_mention}.")
+				format!("You cannot {verb_present} yourself, {moderator_mention}.")
 			},
 			Self::LowerHierarchy => {
 				format!(
 					"{member_mention} is higher in the hierarchy than {moderator_mention}, and \
-					 cannot be moderated.",
+					 cannot be {verb_past}.",
 				)
 			},
 		};
 		let cause = match self {
 			ModerationEligibility::Eligible => panic!("This case should not happen!"),
 			ModerationEligibility::BotUser => {
-				"Bot users are attached to integrations, so it is better to manage them directly \
-				 instead of moderating the bot users."
+				format!(
+					"Bot users are attached to integrations, so it is better to manage them \
+					 directly than to {verb_present} the bot users."
+				)
 			},
 			ModerationEligibility::ServerOwner => {
-				"Server owners are the highest in the hierarchy, so they cannot be moderated."
+				format!(
+					"Server owners are the highest in the hierarchy, so they cannot be \
+					 {verb_past}."
+				)
 			},
 			ModerationEligibility::AreThemselves => {
-				"You don't have higher permissions than yourself."
+				"You don't have higher permissions than yourself.".to_string()
 			},
 			ModerationEligibility::LowerHierarchy => {
-				"You don't have higher permissions than the member you are trying to moderate.."
+				format!(
+					"You don't have higher permissions than the member you are trying to \
+					 {verb_past}."
+				)
 			},
 		};
 		create_error_embed(embed, error, cause)
