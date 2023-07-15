@@ -47,7 +47,6 @@ use crate::{
 		},
 	},
 	exec_config::get_working_guild_id,
-	simple_duration::SimpleDuration,
 };
 
 /// Notifies a guild member of a moderation action being performed on them.
@@ -174,7 +173,9 @@ async fn send_action_results(
 		} else {
 			let duration_text = params
 				.duration
-				.map_or("Not applicable".to_string(), SimpleDuration::human_fmt);
+				.map_or("Not applicable".to_string(), |duration| {
+					duration.to_string()
+				});
 
 			create_info_embed(
 				embed,

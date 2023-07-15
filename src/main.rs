@@ -37,7 +37,6 @@ pub mod aegis;
 pub mod bot;
 pub mod dashboard;
 pub mod exec_config;
-pub mod simple_duration;
 
 /// Execution entry point of Aegistrate.
 #[tokio::main]

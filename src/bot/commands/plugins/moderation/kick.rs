@@ -49,7 +49,6 @@ impl Command for Kick {
 			.description("Kicks a member from the guild.")
 			.plugin(Plugin::Moderation)
 			.cooldown_secs(5)
-			.aliases(None)
 			.build()
 			.unwrap()
 	}

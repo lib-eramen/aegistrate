@@ -58,7 +58,6 @@ impl Command for Enable {
 			.description("Enables a plugin for the current guild.")
 			.plugin(Plugin::Plugins)
 			.cooldown_secs(10)
-			.aliases(None)
 			.build()
 			.unwrap()
 	}

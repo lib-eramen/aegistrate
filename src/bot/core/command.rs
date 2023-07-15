@@ -48,15 +48,20 @@ pub struct Metadata<'a> {
 	/// The cooldown to use the command, in seconds.
 	pub cooldown_secs: u64,
 
+	#[builder(default)]
 	/// The aliases for the command.
 	pub aliases: Option<Vec<&'a str>>,
+
+	#[builder(default)]
+	/// The parameters that require non-Discord validation.
+	pub validated_params: Option<ValidatedParameters<'a>>,
 }
 
 impl<'a> Metadata<'a> {
 	/// Returns the [builder struct](MetadataBuilder) for this struct.
 	#[must_use]
 	pub fn builder<'b>() -> MetadataBuilder<'b> {
-		MetadataBuilder::create_empty()
+		MetadataBuilder::default()
 	}
 
 	/// Returns the list of all names and alises of this command.
@@ -88,6 +93,20 @@ impl<'a> Metadata<'a> {
 			}
 		)
 	}
+}
+
+/// A metadata struct that specifies which parameter names requires validation
+/// that Discord does not natively do.
+#[derive(Clone, Default, Builder)]
+pub struct ValidatedParameters<'a> {
+	/// The parameters that are a date.
+	pub dates: Option<Vec<&'a str>>,
+
+	/// The parameters that are a time duration.
+	pub durations: Option<Vec<&'a str>>,
+
+	/// The parameters that are guild members.
+	pub guild_members: Option<Vec<&'a str>>,
 }
 
 /// The command functionality to work with other systems in Aegistrate.

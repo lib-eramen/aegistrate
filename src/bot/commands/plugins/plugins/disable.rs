@@ -57,7 +57,6 @@ impl Command for Disable {
 			.description("Disables a plugin for the current guild.")
 			.plugin(Plugin::Plugins)
 			.cooldown_secs(10)
-			.aliases(None)
 			.build()
 			.unwrap()
 	}

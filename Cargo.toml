@@ -27,5 +27,6 @@ pluralizer = "0.4.0"
 reqwest = "0.11.18"
 serde = { version = "1.0.164", features = ["serde_derive", "derive"] }
 serenity = { version = "0.11.6", default-features = false, features = ["cache", "client", "gateway", "model", "rustls_backend"] }
+time = "0.3.23"
 tokio = { version = "1.28.1", features = ["full"] }
 toml = "0.7.4"

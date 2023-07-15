@@ -49,7 +49,7 @@ impl Command for Ban {
 			.description("Bans a member from the guild.")
 			.plugin(Plugin::Moderation)
 			.cooldown_secs(5)
-			.aliases(None)
+			.aliases(Some(vec!["blacklist"]))
 			.build()
 			.unwrap()
 	}

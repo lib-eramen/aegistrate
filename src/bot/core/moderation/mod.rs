@@ -33,12 +33,12 @@ use serenity::{
 		UserId,
 	},
 };
+use time::Duration;
 
 use crate::{
 	aegis::Aegis,
 	bot::commands::components::embed::create_error_embed,
 	exec_config::get_working_guild_id,
-	simple_duration::SimpleDuration,
 };
 
 pub mod ban;
@@ -65,7 +65,7 @@ pub struct ModerationParameters {
 
 	/// The ([Option]al) duration to perform this moderation action for.
 	/// Some moderation actions use this parameter, some does not.
-	pub duration: Option<SimpleDuration>,
+	pub duration: Option<Duration>,
 }
 
 impl ModerationParameters {
