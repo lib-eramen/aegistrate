@@ -24,6 +24,7 @@ use crate::{
 		},
 		core::{
 			command::{
+				validate::ValidatedOptions,
 				Command,
 				Metadata,
 			},
@@ -49,6 +50,12 @@ impl Command for Kick {
 			.description("Kicks a member from the guild.")
 			.plugin(Plugin::Moderation)
 			.cooldown_secs(5)
+			.validated_options(
+				ValidatedOptions::builder()
+					.guild_members(vec!["member"])
+					.build()
+					.unwrap(),
+			)
 			.build()
 			.unwrap()
 	}
