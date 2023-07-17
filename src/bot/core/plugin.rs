@@ -27,9 +27,11 @@ use crate::{
 			plugins::plugin_commands,
 		},
 		core::command::{
-			set_up_commands,
+			register::{
+				set_up_commands,
+				REGISTER_COMMAND_INTERVAL,
+			},
 			Commands,
-			REGISTER_COMMAND_INTERVAL,
 		},
 		data::plugin::PluginData,
 	},

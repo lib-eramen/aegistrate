@@ -55,7 +55,8 @@ use crate::{
 		core::{
 			command::{
 				command_by_name,
-				set_up_commands,
+				register::set_up_commands,
+				validate::InvalidOptionError,
 				Command,
 			},
 			cooldown::{
@@ -204,6 +205,55 @@ impl Handler {
 		.map(|_| ())
 	}
 
+	/// Responds to the interaction with an invalid-options message.
+	async fn invalid_options_respond(
+		http: &Http,
+		app_interaction: &ApplicationCommandInteraction,
+		error: InvalidOptionError,
+	) -> Aegis<()> {
+		let error_title = match error {
+			InvalidOptionError::NotDate(_) => "Can't find it in the calendar.",
+			InvalidOptionError::NotDuration(_) => "H-how long is that?",
+			InvalidOptionError::DurationTooLong(_) => "No near end in sight.",
+			InvalidOptionError::NotGuildMember(_) => "Who is that?",
+		};
+
+		let hint_details = match error {
+			InvalidOptionError::NotDate(ref string) => format!(
+				"Your date (`{string}`) does not follow the ISO 8601 standard, which is roughly \
+				 `YYYY-MM-DD`, for example `1970-01-01` for January 1st 1970. The dashes and double \
+				 month and day digits are necessary!"
+			),
+			InvalidOptionError::NotDuration(ref string) => format!(
+				"Your duration (`{string}`) should match the format of `{{digit}}{{time-unit}}, \
+				 for example `5m` for 5 minutes, `1m+30s` for 1 minute and 30 seconds, h for hours, \
+				 etc. More time units and information can be found at (https://github.com/baoyachi/duration-str#duration-unit-list) !`"
+			),
+			InvalidOptionError::DurationTooLong(ref string) => format!(
+				"Your duration (`{string}`) is too long! The maximum duration is 6 months."
+			),
+			InvalidOptionError::NotGuildMember(id) => format!(
+				"Your guild member (`{id}`) is not a member of this guild!"
+			),
+		};
+
+		respond_with_embed(
+			http,
+			app_interaction,
+			ResponseOptions::CreateOrignial(true),
+			|embed| {
+				create_error_embed(
+					embed,
+					error_title,
+					format!("Failed to validate options: {error}"),
+				)
+				.field("Hint", hint_details.clone(), false)
+			},
+		)
+		.await
+		.map(|_| ())
+	}
+
 	/// Responds to the interaction with a not-cooled-down message.
 	async fn not_cooled_down_respond(
 		http: &Http,
@@ -273,6 +323,11 @@ impl Handler {
 			.unwrap()
 		{
 			let _ = Self::not_cooled_down_respond(http, app_interaction, command.as_ref()).await;
+			return;
+		}
+
+		if let Err(error) = command.validate(&app_interaction.data.options) {
+			let _ = Self::invalid_options_respond(http, app_interaction, error).await;
 			return;
 		}
 

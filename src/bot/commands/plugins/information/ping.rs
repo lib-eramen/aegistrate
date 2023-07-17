@@ -45,7 +45,7 @@ impl Command for Ping {
 			.description("Returns the ping of the bot. Pong!")
 			.plugin(Plugin::Information)
 			.cooldown_secs(0)
-			.aliases(Some(vec!["am-i-alive"]))
+			.aliases(vec!["am-i-alive"])
 			.build()
 			.unwrap()
 	}

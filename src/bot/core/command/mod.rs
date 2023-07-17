@@ -3,32 +3,34 @@
 //! systems. To implement a command, get started with looking at the [Command]
 //! trait.
 
-use std::time::Duration;
-
 use async_trait::async_trait;
 use derive_builder::Builder;
 use log::info;
-use pluralizer::pluralize;
 use serenity::{
 	builder::CreateApplicationCommand,
 	client::Cache,
-	http::{
-		CacheHttp,
-		Http,
+	http::Http,
+	model::prelude::{
+		application_command::CommandDataOption,
+		interaction::application_command::ApplicationCommandInteraction,
 	},
-	model::prelude::interaction::application_command::ApplicationCommandInteraction,
 	prelude::Context,
 };
-use tokio::time::sleep;
 
 use crate::{
 	aegis::Aegis,
-	bot::core::plugin::{
-		get_guild_commands,
-		Plugin,
+	bot::core::{
+		command::validate::{
+			InvalidOptionError,
+			ValidatedOptions,
+		},
+		plugin::Plugin,
 	},
 	exec_config::get_working_guild_id,
 };
+
+pub mod register;
+pub mod validate;
 
 /// Alias for a [Vec] of [Box]ed [Command]s.
 pub type Commands = Vec<Box<dyn Command>>;
@@ -50,11 +52,11 @@ pub struct Metadata<'a> {
 
 	#[builder(default)]
 	/// The aliases for the command.
-	pub aliases: Option<Vec<&'a str>>,
+	pub aliases: Vec<&'a str>,
 
 	#[builder(default)]
 	/// The parameters that require non-Discord validation.
-	pub validated_params: Option<ValidatedParameters<'a>>,
+	pub validated_options: ValidatedOptions<'a>,
 }
 
 impl<'a> Metadata<'a> {
@@ -67,12 +69,9 @@ impl<'a> Metadata<'a> {
 	/// Returns the list of all names and alises of this command.
 	#[must_use]
 	pub fn get_all_names(&self) -> Vec<&'a str> {
-		if let Some(mut aliases) = self.aliases.clone() {
-			aliases.push(self.name);
-			aliases
-		} else {
-			vec![self.name]
-		}
+		let mut aliases = self.aliases.clone();
+		aliases.push(self.name);
+		aliases
 	}
 
 	/// Returns the description of the command, noting the alias if the name
@@ -82,31 +81,13 @@ impl<'a> Metadata<'a> {
 		format!(
 			"{}{}",
 			self.description,
-			if self
-				.aliases
-				.as_ref()
-				.is_some_and(|aliases| aliases.contains(&name))
-			{
+			if self.aliases.contains(&name) {
 				format!(" Alias for /{}", self.name)
 			} else {
 				String::new()
 			}
 		)
 	}
-}
-
-/// A metadata struct that specifies which parameter names requires validation
-/// that Discord does not natively do.
-#[derive(Clone, Default, Builder)]
-pub struct ValidatedParameters<'a> {
-	/// The parameters that are a date.
-	pub dates: Option<Vec<&'a str>>,
-
-	/// The parameters that are a time duration.
-	pub durations: Option<Vec<&'a str>>,
-
-	/// The parameters that are guild members.
-	pub guild_members: Option<Vec<&'a str>>,
 }
 
 /// The command functionality to work with other systems in Aegistrate.
@@ -159,6 +140,11 @@ pub trait Command: Send + Sync {
 		);
 		Ok(())
 	}
+
+	/// Validates this command's validatable options.
+	fn validate(&self, options: &[CommandDataOption]) -> Result<(), InvalidOptionError> {
+		self.metadata().validated_options.validate(options)
+	}
 }
 
 /// Returns all commands there are in Aegistrate.
@@ -176,51 +162,3 @@ pub fn command_by_name(name: &str) -> Option<Box<dyn Command>> {
 		.into_iter()
 		.find(|command| command.metadata().get_all_names().contains(&name))
 }
-
-/// Registers multiple commands to a guild.
-#[allow(clippy::cast_possible_wrap)]
-async fn register_commands(
-	http: &Http,
-	cache: &Cache,
-	commands: Vec<Box<dyn Command>>,
-) -> Aegis<()> {
-	let guild = get_working_guild_id();
-	let commands_count = commands.len();
-	for command in commands {
-		command.register_to_guild(http, cache).await?;
-		sleep(Duration::from_secs_f32(REGISTER_COMMAND_INTERVAL)).await;
-	}
-	info!(
-		"Guild \"{}\" ({}) registered {}",
-		guild.name(cache).unwrap_or_else(|| "<null>".to_string()),
-		guild.0,
-		pluralize("command", commands_count as isize, true),
-	);
-	Ok(())
-}
-
-/// Handles command registration for a guild, using the commands from the
-/// guild's enabled plugins.
-///
-/// # Panics
-///
-/// This function will panic if the Discord context does not have a
-/// functional cache.
-///
-/// # Errors
-///
-/// This function might fail if API calls to Discord fail as well.
-pub async fn set_up_commands(context: &Context) -> Aegis<()> {
-	let guild_id = get_working_guild_id();
-	guild_id
-		.set_application_commands(context.http(), |commands| {
-			commands.set_application_commands(vec![])
-		})
-		.await?;
-
-	let guild_commands = get_guild_commands().await?;
-	register_commands(context.http(), context.cache().unwrap(), guild_commands).await
-}
-
-/// The interval to sleep for between each command registration.
-pub static REGISTER_COMMAND_INTERVAL: f32 = 1.0;

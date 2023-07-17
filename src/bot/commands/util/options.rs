@@ -3,6 +3,7 @@
 
 #![allow(clippy::needless_pass_by_value)]
 
+use duration_str::parse_time;
 use serenity::model::prelude::{
 	interaction::application_command::{
 		CommandDataOption,
@@ -12,9 +13,11 @@ use serenity::model::prelude::{
 	PartialMember,
 	User,
 };
-
-/// Alias for a [`CommandDataOption`] slice.
-type Options<'a> = &'a [CommandDataOption];
+use time::{
+	format_description::well_known::Iso8601,
+	Date,
+	Duration,
+};
 
 /// Gets an option from an option list.
 ///
@@ -24,7 +27,7 @@ type Options<'a> = &'a [CommandDataOption];
 /// option resolution might be), unwrapping it might cause the
 /// function to panic.
 #[must_use]
-pub fn get_option(options: Options<'_>, name: &str) -> Option<CommandDataOptionValue> {
+pub fn get_option(options: &[CommandDataOption], name: &str) -> Option<CommandDataOptionValue> {
 	options
 		.iter()
 		.find(|option| option.name.as_str() == name)
@@ -77,6 +80,39 @@ pub fn get_option_or(
 pub fn get_string(option: CommandDataOptionValue) -> String {
 	if let CommandDataOptionValue::String(value) = option {
 		return value;
+	}
+	panic!("Wrong type of option: {option:#?} is not a string");
+}
+
+/// Gets a duration from a string option.
+///
+/// # Panics
+///
+/// The function panics if the option is not of the
+/// [`CommandDataOptionValue::String`] variant, or if parsing the string
+/// argument fails.
+#[must_use]
+pub fn get_duration(option: CommandDataOptionValue) -> Duration {
+	if let CommandDataOptionValue::String(value) = option {
+		return parse_time(value).unwrap();
+	}
+	panic!("Wrong type of option: {option:#?} is not a string");
+}
+
+/// Gets a date from a string option.
+///
+/// Note that the only format accepted is `YYYY-MM-DD` specified by
+/// [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601).
+///
+/// # Panics
+///
+/// The function panics if the option is not of the
+/// [`CommandDataOptionValue::String`] variant, or if parsing the string
+/// argument fails.
+#[must_use]
+pub fn get_date(option: CommandDataOptionValue) -> Date {
+	if let CommandDataOptionValue::String(ref value) = option {
+		return Date::parse(value, &Iso8601::PARSING).unwrap();
 	}
 	panic!("Wrong type of option: {option:#?} is not a string");
 }
