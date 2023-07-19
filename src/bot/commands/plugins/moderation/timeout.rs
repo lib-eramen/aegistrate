@@ -50,7 +50,6 @@ impl Command for Timeout {
 			.name("timeout")
 			.description("Times out a member in the guild.")
 			.plugin(Plugin::Moderation)
-			.aliases(vec!["sit-at-the-corner", "take-a-breather"])
 			.cooldown_secs(5)
 			.validated_options(
 				ValidatedOptions::builder()

@@ -49,7 +49,6 @@ impl Command for Kick {
 			.name("kick")
 			.description("Kicks a member from the guild.")
 			.plugin(Plugin::Moderation)
-			.aliases(vec!["boot", "eject"])
 			.cooldown_secs(5)
 			.validated_options(
 				ValidatedOptions::builder()

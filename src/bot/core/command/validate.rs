@@ -17,15 +17,15 @@ use time::{
 #[derive(Debug, Clone, Eq, PartialEq, Error)]
 pub enum InvalidOptionError {
 	/// The option is not a date.
-	#[error("Not a date (invalidated by ISO 8601): {0}")]
+	#[error("Not a date (invalidated by ISO 8601): `{0}`")]
 	NotDate(String),
 
 	/// The option is not a time duration.
-	#[error("Not a time duration (invalidated by duration_str::parse_time): {0}")]
+	#[error("Not a time duration (invalidated by `duration_str::parse_time`): `{0}`")]
 	NotDuration(String),
 
 	/// The option's time duration is too long (>6 months).
-	#[error("Time duration is too long (>6 months): {0}")]
+	#[error("Time duration is too long (>6 months): `{0}`")]
 	DurationTooLong(String),
 
 	/// The option is not a guild member.
