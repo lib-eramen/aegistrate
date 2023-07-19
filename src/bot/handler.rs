@@ -213,7 +213,7 @@ impl Handler {
 	) -> Aegis<()> {
 		let error_title = match error {
 			InvalidOptionError::NotDate(_) => "Can't find it in the calendar.",
-			InvalidOptionError::NotDuration(_) => "H-how long is that?",
+			InvalidOptionError::NotDuration(_) => "How long is that?",
 			InvalidOptionError::DurationTooLong(_) => "No near end in sight.",
 			InvalidOptionError::NotGuildMember(_) => "Who is that?",
 		};
@@ -225,12 +225,12 @@ impl Handler {
 				 month and day digits are necessary!"
 			),
 			InvalidOptionError::NotDuration(ref string) => format!(
-				"Your duration (`{string}`) should match the format of `{{digit}}{{time-unit}}, \
+				"Your duration (`{string}`) should match the format of `{{digit}}{{time-unit}}`, \
 				 for example `5m` for 5 minutes, `1m+30s` for 1 minute and 30 seconds, h for hours, \
 				 etc. More time units and information can be found at (https://github.com/baoyachi/duration-str#duration-unit-list) !`"
 			),
 			InvalidOptionError::DurationTooLong(ref string) => format!(
-				"Your duration (`{string}`) is too long! The maximum duration is 6 months."
+				"Your duration (`{string}`) is too long! The maximum duration is 1 month (28 days)."
 			),
 			InvalidOptionError::NotGuildMember(id) => format!(
 				"Your guild member (`{id}`) is not a member of this guild!"
@@ -240,7 +240,7 @@ impl Handler {
 		respond_with_embed(
 			http,
 			app_interaction,
-			ResponseOptions::CreateOrignial(true),
+			ResponseOptions::CreateOrignial(false),
 			|embed| {
 				create_error_embed(
 					embed,

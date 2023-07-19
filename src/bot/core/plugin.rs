@@ -5,8 +5,6 @@
 
 #![allow(clippy::match_str_case_mismatch)]
 
-use std::time::Duration;
-
 use anyhow::bail;
 use enum_iterator::{
 	all,
@@ -16,7 +14,6 @@ use serenity::{
 	http::Http,
 	prelude::Context,
 };
-use tokio::time::sleep;
 
 use crate::{
 	aegis::Aegis,
@@ -27,10 +24,7 @@ use crate::{
 			plugins::plugin_commands,
 		},
 		core::command::{
-			register::{
-				set_up_commands,
-				REGISTER_COMMAND_INTERVAL,
-			},
+			register::set_up_commands,
 			Commands,
 		},
 		data::plugin::PluginData,
@@ -172,7 +166,6 @@ pub async fn enable_plugin(plugin: Plugin, http: &Http) -> Aegis<()> {
 		get_working_guild_id()
 			.create_application_command(http, |endpoint| command.register(endpoint))
 			.await?;
-		sleep(Duration::from_secs_f32(REGISTER_COMMAND_INTERVAL)).await;
 	}
 	PluginData::enable_plugin(plugin).await
 }

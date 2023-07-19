@@ -44,6 +44,7 @@ use crate::{
 pub mod ban;
 pub mod kick;
 pub mod moderate;
+pub mod timeout;
 
 fn capitalize_first(s: &str) -> String {
 	let mut chars = s.chars();

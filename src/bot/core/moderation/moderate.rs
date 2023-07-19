@@ -41,6 +41,7 @@ use crate::{
 			ban::ban,
 			capitalize_first,
 			kick::kick,
+			timeout::timeout,
 			ModerationAction,
 			ModerationEligibility,
 			ModerationParameters,
@@ -263,7 +264,7 @@ pub async fn moderate(
 	let action_result = match action {
 		ModerationAction::Ban => ban(params, context, interaction).await,
 		ModerationAction::Kick => kick(params, context, interaction).await,
-		ModerationAction::Timeout => todo!(),
+		ModerationAction::Timeout => timeout(params, context, interaction).await,
 	};
 	send_action_results(action_result, action, params, http, interaction).await
 }

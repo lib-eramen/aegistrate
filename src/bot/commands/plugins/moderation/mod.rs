@@ -6,15 +6,17 @@ use crate::bot::{
 	commands::plugins::moderation::{
 		ban::Ban,
 		kick::Kick,
+		timeout::Timeout,
 	},
 	core::command::Commands,
 };
 
 pub mod ban;
 pub mod kick;
+pub mod timeout;
 
 /// Returns all commads belonging to the [moderation](self) plugin.
 #[must_use]
 pub fn moderation_commands() -> Commands {
-	vec![Box::new(Ban), Box::new(Kick)]
+	vec![Box::new(Ban), Box::new(Kick), Box::new(Timeout)]
 }

@@ -114,8 +114,8 @@ impl ValidatedOptions<'_> {
 				let Ok(duration) = parse_time(string) else {
 					return Err(InvalidOptionError::NotDuration(string.to_string()));
 				};
-				let six_months = 6 * 30 * 24 * 60 * 60;
-				if duration > Duration::days(six_months) {
+				let one_month = 28 * 24 * 60 * 60;
+				if duration > Duration::days(one_month) {
 					return Err(InvalidOptionError::DurationTooLong(string.to_string()));
 				}
 			} else {

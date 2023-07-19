@@ -53,7 +53,7 @@ impl Command for Ban {
 			.aliases(vec!["blacklist"])
 			.validated_options(
 				ValidatedOptions::builder()
-					.guild_members(vec!["member"])
+					.guild_members(vec!["member", "banish"])
 					.build()
 					.unwrap(),
 			)

@@ -1,6 +1,7 @@
-//! Kicks a member in Discord. See also [Kick].
+//! Times out a member in Discord. See also [Timeout].
 
 use async_trait::async_trait;
+use duration_str::parse_time;
 use serenity::{
 	builder::CreateApplicationCommand,
 	model::prelude::{
@@ -38,22 +39,23 @@ use crate::{
 	},
 };
 
-/// The unit struct containing the implementation for the `/kick`
+/// The unit struct containing the implementation for the `/timeout`
 /// command.
-pub struct Kick;
+pub struct Timeout;
 
 #[async_trait]
-impl Command for Kick {
+impl Command for Timeout {
 	fn metadata(&self) -> Metadata<'_> {
 		Metadata::builder()
-			.name("kick")
-			.description("Kicks a member from the guild.")
+			.name("timeout")
+			.description("Times out a member in the guild.")
 			.plugin(Plugin::Moderation)
-			.aliases(vec!["boot", "eject"])
+			.aliases(vec!["sit-at-the-corner", "take-a-breather"])
 			.cooldown_secs(5)
 			.validated_options(
 				ValidatedOptions::builder()
 					.guild_members(vec!["member"])
+					.durations(vec!["duration"])
 					.build()
 					.unwrap(),
 			)
@@ -69,17 +71,22 @@ impl Command for Kick {
 			.create_option(|member| {
 				member
 					.name("member")
-					.description("The member to kick from the guild.")
+					.description("The member to time out in the guild.")
 					.kind(CommandOptionType::User)
+					.required(true)
+			})
+			.create_option(|duration| {
+				duration
+					.name("duration")
+					.description("The duration of the timeout.")
+					.kind(CommandOptionType::String)
 					.required(true)
 			})
 			.create_option(|reason| {
 				reason
 					.name("reason")
-					.description("The reason to kick this member.")
+					.description("The reason to time out this member.")
 					.kind(CommandOptionType::String)
-					.min_length(3)
-					.max_length(100)
 					.required(false)
 			})
 	}
@@ -97,11 +104,13 @@ impl Command for Kick {
 				"reason",
 				CommandDataOptionValue::String("No reason provided.".to_string()),
 			)))
-			.duration(None)
+			.duration(Some(
+				parse_time(get_string(get_required_option(options, "duration"))).unwrap(),
+			))
 			.build()
 			.unwrap();
 		moderate(
-			ModerationAction::Kick,
+			ModerationAction::Timeout,
 			&moderation_params,
 			context,
 			interaction,

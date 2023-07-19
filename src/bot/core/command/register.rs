@@ -1,7 +1,5 @@
 //! Provides convenience functions for registering commands to Discord's API.
 
-use std::time::Duration;
-
 use log::info;
 use pluralizer::pluralize;
 use serenity::{
@@ -12,7 +10,6 @@ use serenity::{
 	},
 	prelude::Context,
 };
-use tokio::time::sleep;
 
 use crate::{
 	aegis::Aegis,
@@ -22,9 +19,6 @@ use crate::{
 	},
 	exec_config::get_working_guild_id,
 };
-
-/// The interval to sleep for between each command registration.
-pub static REGISTER_COMMAND_INTERVAL: f32 = 1.0;
 
 /// Registers multiple commands to a guild.
 #[allow(clippy::cast_possible_wrap)]
@@ -37,7 +31,6 @@ async fn register_commands(
 	let commands_count = commands.len();
 	for command in commands {
 		command.register_to_guild(http, cache).await?;
-		sleep(Duration::from_secs_f32(REGISTER_COMMAND_INTERVAL)).await;
 	}
 	info!(
 		"Guild \"{}\" ({}) registered {}",
